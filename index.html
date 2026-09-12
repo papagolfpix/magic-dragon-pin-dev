@@ -1569,7 +1569,6 @@ body.docketMode .docketActiveScroll{display:block!important}
 #invoiceViewer .invoicePaymentToggle{margin-top:7px}
 #invoiceViewer .invoicePaymentSave{margin-top:7px}
 #invoiceViewer .invoicePaymentSummary{margin-top:6px}
-#exportData,#importData+*{}
 #settings label.btn[for],#settings .btn{font-size:15px;font-weight:850}
 @media(min-width:700px){#invoiceViewerBody{max-width:680px}#invoiceViewer .invoiceBranches{grid-template-columns:1fr 1fr}}
 
@@ -3599,7 +3598,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.14 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.15 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -4200,8 +4199,6 @@ const BASE_PRODUCTS = [
  ["King's Tars 1g","kanja",60,150],["King's Tars Pre-Roll","preroll",75,150],["Rose Gold Pave 1g","kanja",60,150]
 ].map((p,i)=>({id:"P"+String(i+1).padStart(3,"0"),name:p[0],type:p[1],cost:p[2],retail:p[3]}));
 
-const LAMAI_NAMES = new Set(["Tropicana Cookies","Rose Gold Pave 1g","Black Cherry Punch","Black Berry Oreoz","Super Boof","Permanent Marker","Strawberry Apple","Miami","King Juice","Night Move","Mochi","King's Tars 1g","Super Lemon Haze",
-"Colombiana Pre-Roll","Runtz Layer Cake Pre-Roll","Super Boof Pre-Roll","Strawberry Apple Pre-Roll","Miami Pre-Roll","King Juice Pre-Roll","Night Move Pre-Roll","Mochi Pre-Roll","Black Cherry Punch Pre-Roll","Black Berry Oreoz Pre-Roll","Tropicana Cherry Pre-Roll","King's Tars Pre-Roll","Super Lemon Haze Pre-Roll","Tropicana Cookies Pre-Roll","Permanent Marker Pre-Roll"]);
 
 const db = JSON.parse(localStorage.getItem("mdpin-db")||"null") || {products:BASE_PRODUCTS,deliveries:[],weeks:[],stock:{"BM Bangrak":{},"Lamai":{}}};
 if(!Array.isArray(db.docketAudit)) db.docketAudit=[];
@@ -4479,7 +4476,6 @@ window.clearMissingBarcodeFilter=()=>{catalogueMissingBarcodesOnly=false;renderC
 
 let showArchivedCatalogue=false;
 function isProductArchived(p){return !!p?.archivedAt}
-function activeCatalogueProducts(){return (db.products||[]).filter(p=>!isProductArchived(p))}
 window.toggleArchivedCatalogue=()=>{
   showArchivedCatalogue=!showArchivedCatalogue;
   renderCatalogue();
@@ -4913,7 +4909,6 @@ document.getElementById("saveDelivery").onclick=()=>{
  db.deliveries.push(d); resetDeliveryEditor(); save(); refreshReconciliationViews(); renderDocket(d); renderMetrics(); renderHistory(); renderAudit(); openDeliveryArchive(d.id);
 }
 
-function lineKey(l){return String(l.productId||"")+"|"+String(Number(l.qty||0));}
 function productLineLabel(l){const p=resolvedProductById(l.productId)||db.products.find(x=>x.id===l.productId);return `${l.productName||p?.name||"Unknown product"} × ${Number(l.qty||0)}`;}
 function docketChangeHistoryMarkup(d){
  const changes=Array.isArray(d.lineChanges)?d.lineChanges:[]; if(!changes.length)return "";
@@ -5425,20 +5420,12 @@ function recordItemHtml(x){
 }
 window.openRecordDelivery=id=>openDeliveryArchive(id);
 window.openRecordSunday=id=>{switchTab('import');renderArchive(id);setTimeout(()=>{document.getElementById('archiveList')?.scrollIntoView({behavior:'smooth',block:'start'})},60)};
-window.openRecordInvoice=id=>openInvoiceRecord(id);
 window.openRecordWeekly=id=>{
  const w=(db.weeks||[]).find(x=>x.id===id);if(!w)return;
  // Manual weekly records are retained for evidence but are not part of Pin's normal workflow.
  alert(`${recordDateLabel(w.date)} — ${displayBranchName(w.branch)}\n\nSaved manual stock/weekly check. This is a fallback record; normal Sunday work is handled from the Sunday Excel reports.`);
 };
 
-window.showDock=id=>openDeliveryArchive(id)
-window.deleteRecord=(kind,id)=>{
- if(kind==="Delivery")return deleteDocket(id);
- if(!confirm(`Delete this ${kind.toLowerCase()} record?`))return;
- db.weeks=db.weeks.filter(x=>x.id!==id);
- save(); renderHistory(); renderMetrics(); renderAudit();
-}
 
 
 function renderCatalogue(){
@@ -5519,18 +5506,6 @@ function renderCatalogue(){
 
  if(!rows.innerHTML)rows.innerHTML='<tr><td colspan="5" class="small">No active products. Use Show archived to restore products.</td></tr>';
 }
-window.editPrice=(id,k,v)=>{const p=db.products.find(x=>x.id===id);if(!p)return;p[k]=+v;save()}
-window.editProductName=(id,value)=>{
- const p=db.products.find(x=>x.id===id);if(!p)return;
- const next=cleanProductDisplayName(value);if(!next){renderCatalogue();return alert("Product name cannot be blank.")}
- const conflict=db.products.find(x=>x.id!==id&&normalizeProductKey(x.name)===normalizeProductKey(next));
- if(conflict){renderCatalogue();return alert(`That master product name already exists as “${conflict.name}”. Use Master Product Setup to merge shop names into it.`)}
- const old=p.name;p.name=next;ensureProductAliases();
- Object.keys(db.productAliases).forEach(k=>{if(db.productAliases[k]===id)db.productAliases[k]=id});
- db.productAliases[normalizeProductKey(old)]=id;
- retroactivelyRemapAllImports(false);save();renderMasterProductSetup();
-}
-
 function openDashboardInvoices(){
   switchTab("history");
   const type=document.getElementById("recordsType");
@@ -5704,7 +5679,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.14-dev",
+    appVersion:"0.10.15-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -5999,12 +5974,6 @@ function sanitizeArchivePart(s){
   return String(s||"").trim().replace(/[^\w\- ]+/g,"").replace(/\s+/g,"-").replace(/-+/g,"-");
 }
 
-function parseDateFromText(s){
-  const m=String(s||"").match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-  if(!m) return null;
-  const dd=m[1].padStart(2,"0"), mm=m[2].padStart(2,"0"), yyyy=m[3];
-  return `${yyyy}-${mm}-${dd}`;
-}
 
 function detectBranchFromWorkbook(rows, filename){
   const hay=[filename, ...(rows.slice(0,4).flat().filter(Boolean))].join(" ").toLowerCase();
@@ -6013,13 +5982,6 @@ function detectBranchFromWorkbook(rows, filename){
   return null;
 }
 
-function findHeaderRow(rows){
-  for(let i=0;i<Math.min(rows.length,12);i++){
-    const vals=(rows[i]||[]).map(v=>String(v||"").toLowerCase());
-    if(vals.some(v=>v.includes("products")) && vals.some(v=>v.includes("old stock"))) return i;
-  }
-  return 2; // current BM format fallback
-}
 
 
 
@@ -6392,9 +6354,6 @@ function ensureSundayArchive(){
   if(!db.sundayImports) db.sundayImports=[];
 }
 
-function mapProductByName(name){
-  return canonicalProductMatch(name).product;
-}
 
 function validateWorkbookMath(rep){
   let mismatches=[];
@@ -6511,7 +6470,6 @@ function reconcileExcelReport(rep){
   const previous=getPreviousSundayReport(rep.branch,rep.date,rep.id||null);
   const nearestEarlier=getNearestEarlierSundayReport(rep.branch,rep.date,rep.id||null);
   const previousGap=nearestEarlier?daysBetween(nearestEarlier.date,rep.date):null;
-  const periodStart=previous?.date || rep.oldDate || null;
   let verified=0, stockErrorRows=0, deliveryIssueRows=0, historyPendingRows=0, mappingRows=0;
   const details=[];
   const flowRows=[];
@@ -8593,7 +8551,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.14-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.15-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -8625,7 +8583,7 @@ document.getElementById("fillMasterCurrent").onclick=()=>renderMasterProductSetu
 document.getElementById("saveMasterProducts").onclick=applyMasterProductSetup;
 document.getElementById("resetData").onclick=()=>{if(confirm("Delete all local Magic Dragon Pin data on this browser?")){localStorage.removeItem("mdpin-db");location.reload()}}
 
-// v0.10.14 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
+// v0.10.15 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
 const MDPIN_SUPABASE_URL="https://bzgkeshxbnhnlrpdgbtb.supabase.co";
 const MDPIN_SUPABASE_PUBLISHABLE_KEY="sb_publishable_8EReyQFUFSe6SPHCBLhU7g_zp8j18_D";
 const MDPIN_SUPABASE_SESSION_KEY="mdpin-supabase-dev-session";
@@ -8827,7 +8785,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.14-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.15-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -8885,7 +8843,7 @@ async function mdCloudRefUpload(){
   try{
     await mdCloudRefUpsert('/rest/v1/md_reference_products',products,'id');
     if(aliases.length)await mdCloudRefUpsert('/rest/v1/md_reference_aliases',aliases,'alias_key');
-    await mdCloudRefUpsert('/rest/v1/md_reference_settings',[{key:'business_rules',value:rules,updated_at:new Date().toISOString()},{key:'snapshot_meta',value:{app_version:'0.10.14-dev',product_count:products.length,alias_count:aliases.length,uploaded_at:new Date().toISOString()},updated_at:new Date().toISOString()}],'key');
+    await mdCloudRefUpsert('/rest/v1/md_reference_settings',[{key:'business_rules',value:rules,updated_at:new Date().toISOString()},{key:'snapshot_meta',value:{app_version:'0.10.15-dev',product_count:products.length,alias_count:aliases.length,uploaded_at:new Date().toISOString()},updated_at:new Date().toISOString()}],'key');
     mdCloudRefSetStatus(`Upload complete: ${products.length} products and ${aliases.length} aliases copied to DEV Cloud. Verifying read-back…`,"ok");
     await mdCloudRefCheck();
   }catch(err){mdCloudRefSetStatus(`Upload failed: ${err?.message||err}`,"bad");}

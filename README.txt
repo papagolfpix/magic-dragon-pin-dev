@@ -1,28 +1,45 @@
-MAGIC DRAGON PIN v0.10.14 DEV — SUPABASE STAGE 2C CONTROLLED CLOUD REFERENCE MERGE
+MAGIC DRAGON PIN v0.10.15 DEV — CONSERVATIVE CLEANUP
+
+Built directly from v0.10.14 DEV Supabase Stage 2C.
 
 Purpose
-- Preserves the proven GitHub Pages ↔ Supabase connection/authentication/RLS Lego block.
-- Preserves Stage 2B automatic read-only cloud reference loading.
-- Adds a controlled Cloud → Local reference merge with preview, explicit confirmation and one-step undo.
+- Remove only code/artifacts that can be proven redundant from static inspection.
+- Do not change business logic, workflows, Supabase behavior or data formats.
 
-Stage 2C safety rules
-- Cloud reference products are merged by stable product ID.
-- Matching cloud products may update local reference fields; missing cloud products may be added locally.
-- Cloud aliases may be merged when their target product exists.
-- Local products are NEVER deleted by Stage 2C.
-- Deliveries, Sunday reports, invoices, payments, stock history and other operational records are NEVER changed by Stage 2C.
-- A one-step local undo snapshot of products + aliases is saved immediately before a merge.
-- Upload Local Reference Snapshot remains manual and DEV-only.
+Safe removals
+- script0.js and script1.js: exact duplicates of the two inline scripts already contained in index.html; neither file was referenced or cached.
+- Unreferenced functions:
+  activeCatalogueProducts
+  lineKey
+  parseDateFromText
+  findHeaderRow
+  mapProductByName
+- Unused LAMAI_NAMES constant.
+- Unused reconcileExcelReport local periodStart.
+- Obsolete unreferenced window aliases:
+  openRecordInvoice
+  showDock
+  deleteRecord
+  editPrice
+  editProductName
+- One empty CSS rule (#exportData,#importData+*{}).
 
-Validation sequence
-1. Deploy this ZIP to the DEV GitHub Pages site and confirm v0.10.14 DEV is visible.
-2. Open Settings → DEV Cloud Connection.
-3. Confirm secure connection and automatic cloud reference load.
-4. Tap Preview Cloud → Local. On the currently matching test device, expected result is “no changes are required”.
-5. Do NOT force a mismatch on the operational phone merely to test apply/undo. The controlled merge can be exercised later on a second/test device or after a legitimate reference-data difference exists.
+Intentionally retained
+- All legacy migration/compatibility helpers that are still referenced.
+- Delivery editor v0.9.98 keyboard manager.
+- Shared v0.10.4 app-scroll-owner keyboard-safe helper.
+- Supabase connection/authentication diagnostics.
+- Stage 2A / 2B / 2C reference-cloud logic and undo.
+- Backup/restore compatibility.
+- Current DEV service-worker cleanup diagnostic while cloud development remains active.
 
-Supabase
-- No new SQL is required if SUPABASE-STAGE2A-SETUP.sql was already run successfully.
-- Reuses md_reference_products, md_reference_aliases and md_reference_settings with the existing authenticated RLS policies.
+Validation
+- JavaScript syntax check: PASS.
+- Duplicate named-function check: PASS.
+- Removed symbols verified absent.
+- Supabase endpoint and Stage 2C markers retained.
+- Delivery, Sunday, invoice, Backup & Recovery, barcode-PDF and keyboard markers retained.
+- Visible version and service-worker cache bumped to v0.10.15 DEV.
 
-v0.10.14 DEV
+Next validation
+Deploy to DEV staging and perform a normal smoke test. Stage 2C mismatch/apply/undo should still be exercised only on a secondary/test device or a legitimate mismatch.
