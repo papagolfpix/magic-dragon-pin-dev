@@ -1,45 +1,42 @@
-MAGIC DRAGON PIN v0.10.15 DEV — CONSERVATIVE CLEANUP
+MAGIC DRAGON PIN v0.10.18 DEV — SUPABASE STAGE 2D
 
-Built directly from v0.10.14 DEV Supabase Stage 2C.
+REUSABLE LEGO BLOCK: Reference Sync Decision / Conflict Guard
 
-Purpose
-- Remove only code/artifacts that can be proven redundant from static inspection.
-- Do not change business logic, workflows, Supabase behavior or data formats.
+This module gives a local-first/cloud-backed app a standard decision layer before reference data moves in either direction.
 
-Safe removals
-- script0.js and script1.js: exact duplicates of the two inline scripts already contained in index.html; neither file was referenced or cached.
-- Unreferenced functions:
-  activeCatalogueProducts
-  lineKey
-  parseDateFromText
-  findHeaderRow
-  mapProductByName
-- Unused LAMAI_NAMES constant.
-- Unused reconcileExcelReport local periodStart.
-- Obsolete unreferenced window aliases:
-  openRecordInvoice
-  showDock
-  deleteRecord
-  editPrice
-  editProductName
-- One empty CSS rule (#exportData,#importData+*{}).
+STATE CLASSIFICATION
+- MATCH
+- LOCAL CHANGED
+- CLOUD CHANGED
+- CONFLICT
+- FIRST CONTACT
+- CLOUD EMPTY
 
-Intentionally retained
-- All legacy migration/compatibility helpers that are still referenced.
-- Delivery editor v0.9.98 keyboard manager.
-- Shared v0.10.4 app-scroll-owner keyboard-safe helper.
-- Supabase connection/authentication diagnostics.
-- Stage 2A / 2B / 2C reference-cloud logic and undo.
-- Backup/restore compatibility.
-- Current DEV service-worker cleanup diagnostic while cloud development remains active.
+MECHANISM
+- deterministic local reference fingerprint
+- deterministic cloud reference fingerprint
+- persistent per-device ID
+- local last-common sync anchor
+- cloud snapshot metadata stored in the EXISTING snapshot_meta settings row
+- stronger confirmation for potentially conflicting upload or merge directions
 
-Validation
-- JavaScript syntax check: PASS.
-- Duplicate named-function check: PASS.
-- Removed symbols verified absent.
-- Supabase endpoint and Stage 2C markers retained.
-- Delivery, Sunday, invoice, Backup & Recovery, barcode-PDF and keyboard markers retained.
-- Visible version and service-worker cache bumped to v0.10.15 DEV.
+SNAPSHOT META
+- schema_version
+- snapshot_id
+- app_version
+- product_count
+- alias_count
+- uploaded_at
+- source_device_id
+- reference_fingerprint
 
-Next validation
-Deploy to DEV staging and perform a normal smoke test. Stage 2C mismatch/apply/undo should still be exercised only on a secondary/test device or a legitimate mismatch.
+IMPORTANT
+- No new Supabase table
+- No SQL migration
+- Older cloud snapshots remain compatible; cloud fingerprint can be calculated from returned rows
+- Stage 2C preview/apply/undo is preserved
+- No automatic direction is chosen during a conflict
+- Operational data remains local-only
+
+REUSABLE CONTRACT
+AUTHENTICATED REFERENCE STORE + DETERMINISTIC FINGERPRINT + LAST-COMMON ANCHOR + CONFLICT CLASSIFICATION + EXPLICIT DIRECTION + UNDO.

@@ -3584,6 +3584,74 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 .cloudRefStatus{margin-top:9px;padding:9px 10px;border-radius:10px;background:#f2f4f7;color:#344054;font-size:.9rem}.cloudRefStatus.ok{background:#ecfdf3;color:#067647}.cloudRefStatus.warn{background:#fffaeb;color:#b54708}.cloudRefStatus.bad{background:#fef3f2;color:#b42318}
 .cloudRefMetrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.cloudRefMetrics span{padding:8px;border:1px solid #e4e7ec;border-radius:10px;background:white;text-align:center}.cloudRefMetrics b{display:block;font-size:1.05rem}.cloudRefMetrics small{display:block;color:#667085;font-size:.72rem;margin-top:2px}.cloudStage2Actions{margin-top:9px;display:flex;gap:8px;flex-wrap:wrap}.cloudStage2Actions button{flex:1 1 190px}
 
+
+/* v0.10.18 — responsive A–Z delivery scrubber
+   Visual letters and touch zones now share the same full-width grid. */
+#delivery .deliveryAlphabetScrubber{
+  width:100%;
+  box-sizing:border-box;
+}
+#delivery .deliveryAlphabetTrack{
+  width:100%;
+  display:grid!important;
+  grid-template-columns:repeat(26,minmax(0,1fr))!important;
+  align-items:center;
+  justify-items:center;
+  gap:0!important;
+  box-sizing:border-box;
+}
+#delivery .deliveryAlphabetTrack > *{
+  min-width:0!important;
+  width:100%!important;
+  text-align:center!important;
+  box-sizing:border-box;
+}
+#delivery .deliveryAlphabetLetter{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  width:100%!important;
+  min-width:0!important;
+  padding:0!important;
+  margin:0!important;
+  box-sizing:border-box;
+  user-select:none;
+  -webkit-user-select:none;
+}
+@media (min-width:700px){
+  #delivery .deliveryAlphabetLetter{
+    font-size:11px!important;
+  }
+}
+
+
+/* v0.10.18 — delivery picker visibility layout */
+#deliveryEntryTools .deliveryPrimaryProduct{
+  width:100%;
+  margin-bottom:6px;
+}
+#deliveryEntryTools .deliveryPrimaryProduct select{
+  width:100%;
+}
+#deliveryEntryTools .deliveryAddRow{
+  grid-template-columns:minmax(90px,140px) auto;
+  justify-content:start;
+}
+
+
+/* v0.10.18 — reusable reference sync decision / conflict guard */
+.cloudSyncDecision{display:grid;gap:6px;margin-top:8px;padding:9px 10px;border:1px solid #dbe1e9;border-radius:10px;background:#f8fafc}
+.cloudSyncDecision b{display:block;font-size:10.5px;color:#172033}
+.cloudSyncDecision small{display:block;margin-top:2px;font-size:8.5px;line-height:1.3;color:#667085}
+.cloudSyncMeta{display:flex;gap:7px;flex-wrap:wrap}
+.cloudSyncMeta span{padding:3px 6px;border-radius:999px;background:#eef1f5;color:#475467;font-size:8px;font-weight:800}
+.cloudSyncDecision[data-state="match"]{border-color:#b9dec1;background:#f3fbf5}
+.cloudSyncDecision[data-state="cloud-changed"]{border-color:#b9cce5;background:#f4f8fd}
+.cloudSyncDecision[data-state="local-changed"]{border-color:#e1cf9b;background:#fffaf0}
+.cloudSyncDecision[data-state="conflict"]{border-color:#e7b2b2;background:#fff5f5}
+.cloudSyncDecision[data-state="first-contact"]{border-color:#d5c7e8;background:#faf7ff}
+.cloudSyncDecision[data-state="cloud-empty"]{border-color:#e1cf9b;background:#fffaf0}
+
 </style>
 </head>
 <body>
@@ -3598,7 +3666,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.15 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.18 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -3793,16 +3861,16 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
         </div>
         <button id="deliveryEditAddToggle" class="deliveryEditAddToggle" type="button" style="display:none" onclick="toggleDeliveryEditAddTools()">＋ Add another product</button>
         <div id="deliveryEntryTools" class="deliveryEntryTools">
+          <div class="field deliveryProductField deliveryPrimaryProduct"><label>Product</label><select id="delProduct"></select></div>
           <div class="field deliverySearch"><label>Find product</label><input id="deliveryProductSearch" type="search" placeholder="Type Pin's product name…" autocomplete="off"></div>
           <div class="deliveryAlphabetWrap" aria-label="Alphabet product finder">
             <div id="deliveryAlphabetScrubber" class="deliveryAlphabetScrubber" role="slider" aria-label="Find product by first letter" aria-valuemin="1" aria-valuemax="26" aria-valuenow="1" tabindex="0">
-              <div class="deliveryAlphabetLetters" aria-hidden="true">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</div>
+              <div class="deliveryAlphabetLetters deliveryAlphabetTrack" aria-hidden="true">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</div>
               <div id="deliveryAlphabetThumb" class="deliveryAlphabetThumb" aria-hidden="true">A</div>
             </div>
           </div>
           <details class="compactHelp"><summary>ⓘ Delivery entry help</summary><div class="small">The delivery list uses Pin's master product names. Enter only products being delivered.</div></details>
           <div class="row deliveryAddRow">
-            <div class="field deliveryProductField"><label>Product</label><select id="delProduct"></select></div>
             <div class="field deliveryQtyField"><label>Qty</label><input id="delQty" type="number" min="1" placeholder="Qty" inputmode="numeric"></div>
             <button class="btn gold deliveryAddButton" id="addDeliveryLine">Add line</button>
           </div>
@@ -3954,7 +4022,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
               <div class="cloudStatusLeft"><span id="cloudDevDot" class="cloudDot"></span><div><b id="cloudDevTitle">Supabase DEV</b><div id="cloudDevStatusText" class="cloudStatusText">Checking connection…</div></div></div>
               <span class="pill">DEV</span>
             </div>
-            <div class="cloudDevNote"><strong>Stage 2C DEV:</strong> the proven read-only cloud reference layer is preserved. A new controlled Cloud → Local merge can now be previewed and applied manually. It never deletes local products and never changes deliveries, Sunday reports, invoices or payments.</div>
+            <div class="cloudDevNote"><strong>Stage 2D DEV:</strong> the proven Stage 2C preview/apply/undo flow is preserved behind a reusable reference-sync decision layer. Local and cloud reference fingerprints are compared before upload or merge. Deliveries, Sunday reports, invoices and payments remain local-only.</div>
             <div id="cloudLoggedOut">
               <div class="cloudLoginGrid">
                 <div class="field"><label>DEV login email</label><input id="cloudDevEmail" type="email" inputmode="email" autocomplete="username" placeholder="Email"></div>
@@ -3968,8 +4036,12 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
             </div>
 
             <div class="cloudStage2Card" id="cloudStage2Card">
-              <div class="cloudStage2Head"><div><b>Stage 2C · Controlled Cloud Reference Merge</b><small>DEV-only · auto-read · preview before apply · no deletions</small></div><span class="pill">SAFE MERGE</span></div>
+              <div class="cloudStage2Head"><div><b>Stage 2D · Reference Sync Decision Guard</b><small>DEV-only · fingerprinted state · conflict-aware · explicit actions</small></div><span class="pill">SYNC GUARD</span></div>
               <div id="cloudRefStatus" class="cloudRefStatus">Sign in and the cloud reference layer will load automatically. Refresh / Compare remains available for a manual read.</div>
+              <div id="cloudSyncDecision" class="cloudSyncDecision" data-state="unknown">
+                <div><b id="cloudSyncDecisionTitle">Sync state: waiting</b><small id="cloudSyncDecisionText">The app will compare local and cloud reference fingerprints after sign-in.</small></div>
+                <div class="cloudSyncMeta"><span id="cloudSyncCloudMeta">Cloud: —</span><span id="cloudSyncDeviceMeta">Device: —</span></div>
+              </div>
               <div id="cloudMergePreview" class="cloudDevNote" style="display:none;margin-top:10px"></div>
               <div id="cloudRefMetrics" class="cloudRefMetrics">
                 <span><b id="cloudRefLocalProducts">—</b><small>Local products</small></span>
@@ -3983,7 +4055,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
                 <button class="btn alt" id="cloudRefUndoMerge" type="button" disabled>Undo Last Merge</button>
                 <button class="btn alt" id="cloudRefUpload" type="button">Upload Local Reference Snapshot</button>
               </div>
-              <div class="cloudDevNote"><strong>Safety:</strong> Stage 2C only merges cloud reference products and aliases into this device after an explicit preview and confirmation. It does not delete local products, does not replace operational records, and stores a one-step local undo snapshot before applying the merge.</div>
+              <div class="cloudDevNote"><strong>Safety:</strong> Stage 2D preserves the Stage 2C preview/undo rules and adds a reusable conflict guard. It fingerprints local and cloud reference state, remembers the last common reference point, and warns before an action could overwrite changes made on the other side. Operational records are never included.</div>
             </div>
           </div>
         </div>
@@ -5679,7 +5751,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.15-dev",
+    appVersion:"0.10.18-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -7284,7 +7356,8 @@ function setDeliveryAlphabetLetter(letter, clientX=null){
     if(thumb){
       thumb.textContent=letter;
       thumb.style.display="grid";
-      const rect=el.getBoundingClientRect();
+      const track=el.querySelector(".deliveryAlphabetTrack")||el;
+  const rect=track.getBoundingClientRect();
       const x=clientX==null?((pos+.5)/26)*rect.width:Math.max(0,Math.min(rect.width,clientX-rect.left));
       thumb.style.left=`${x}px`;
     }
@@ -8551,7 +8624,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.15-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.18-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -8583,7 +8656,7 @@ document.getElementById("fillMasterCurrent").onclick=()=>renderMasterProductSetu
 document.getElementById("saveMasterProducts").onclick=applyMasterProductSetup;
 document.getElementById("resetData").onclick=()=>{if(confirm("Delete all local Magic Dragon Pin data on this browser?")){localStorage.removeItem("mdpin-db");location.reload()}}
 
-// v0.10.15 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
+// v0.10.18 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
 const MDPIN_SUPABASE_URL="https://bzgkeshxbnhnlrpdgbtb.supabase.co";
 const MDPIN_SUPABASE_PUBLISHABLE_KEY="sb_publishable_8EReyQFUFSe6SPHCBLhU7g_zp8j18_D";
 const MDPIN_SUPABASE_SESSION_KEY="mdpin-supabase-dev-session";
@@ -8685,8 +8758,101 @@ function mdCloudSignOut(){
   const token=mdCloudSession?.access_token;
   mdCloudSaveSession(null);
   mdCloudSetStatus("Signed out. Local app data is unchanged.","idle");
-  mdCloudReferenceSnapshot=null; mdCloudRefSetStatus("Signed out. Cloud reference layer cleared from memory; local data was not changed.");
+  mdCloudReferenceSnapshot=null; mdCloudSyncDecision={state:"unknown",localFingerprint:null,cloudFingerprint:null,anchorFingerprint:null,meta:null}; mdRefRenderDecision(mdCloudSyncDecision); mdCloudRefSetStatus("Signed out. Cloud reference layer cleared from memory; local data was not changed.");
   if(token)fetch(`${MDPIN_SUPABASE_URL}/auth/v1/logout`,{method:"POST",headers:{apikey:MDPIN_SUPABASE_PUBLISHABLE_KEY,Authorization:`Bearer ${token}`}}).catch(()=>{});
+}
+
+
+/* Stage 2D reusable Lego block — Reference Sync Decision / Conflict Guard */
+const MDPIN_REF_DEVICE_KEY="mdpin-ref-device-id";
+const MDPIN_REF_ANCHOR_KEY="mdpin-ref-sync-anchor-v1";
+let mdCloudSyncDecision={state:"unknown",localFingerprint:null,cloudFingerprint:null,anchorFingerprint:null,meta:null};
+
+function mdRefDeviceId(){
+  let id=localStorage.getItem(MDPIN_REF_DEVICE_KEY);
+  if(id)return id;
+  const raw=(globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(16).slice(2)}`).replace(/[^A-Za-z0-9]/g,"");
+  id=`MD-${raw.slice(0,10).toUpperCase()}`;
+  localStorage.setItem(MDPIN_REF_DEVICE_KEY,id);
+  return id;
+}
+function mdRefHash(text){
+  let h=0x811c9dc5;
+  for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
+  return h.toString(16).padStart(8,"0");
+}
+function mdRefStableStateFromLocal(){
+  const products=(db.products||[]).map(mdCloudRefCanonicalProduct).map(p=>({id:p.id,name:p.name,type:p.type,cost:p.cost,retail:p.retail,barcode:p.barcode,archived:p.archived})).sort((a,b)=>a.id.localeCompare(b.id));
+  const aliases=Object.entries(db.productAliases||{}).map(([alias_key,product_id])=>({alias_key:String(alias_key),product_id:String(product_id)})).sort((a,b)=>a.alias_key.localeCompare(b.alias_key)||a.product_id.localeCompare(b.product_id));
+  return {products,aliases};
+}
+function mdRefStableStateFromCloud(cloud){
+  const products=(cloud?.products||[]).map(r=>mdCloudRefCanonicalProduct(r.payload||r)).map(p=>({id:p.id,name:p.name,type:p.type,cost:p.cost,retail:p.retail,barcode:p.barcode,archived:p.archived})).sort((a,b)=>a.id.localeCompare(b.id));
+  const aliases=(cloud?.aliases||[]).map(a=>({alias_key:String(a.alias_key||""),product_id:String(a.product_id||"")})).filter(a=>a.alias_key&&a.product_id).sort((a,b)=>a.alias_key.localeCompare(b.alias_key)||a.product_id.localeCompare(b.product_id));
+  return {products,aliases};
+}
+function mdRefFingerprint(state){return mdRefHash(JSON.stringify(state));}
+function mdRefSnapshotMeta(cloud){
+  const row=(cloud?.settings||[]).find(r=>String(r.key)==="snapshot_meta");
+  let value=row?.value||{};
+  if(typeof value==="string"){try{value=JSON.parse(value)}catch(_){value={}}}
+  return value&&typeof value==="object"?value:{};
+}
+function mdRefReadAnchor(){try{return JSON.parse(localStorage.getItem(MDPIN_REF_ANCHOR_KEY)||"null")}catch(_){return null}}
+function mdRefRememberAnchor(fingerprint,meta={}){
+  if(!fingerprint)return;
+  localStorage.setItem(MDPIN_REF_ANCHOR_KEY,JSON.stringify({fingerprint,remembered_at:new Date().toISOString(),cloud_snapshot_id:meta.snapshot_id||null,cloud_uploaded_at:meta.uploaded_at||null}));
+}
+function mdRefClassify(cloud){
+  const localFingerprint=mdRefFingerprint(mdRefStableStateFromLocal());
+  const meta=mdRefSnapshotMeta(cloud);
+  const cloudFingerprint=String(meta.reference_fingerprint||mdRefFingerprint(mdRefStableStateFromCloud(cloud)));
+  const anchor=mdRefReadAnchor();
+  const anchorFingerprint=String(anchor?.fingerprint||"");
+  let state="first-contact";
+  if(!(cloud?.products||[]).length)state="cloud-empty";
+  else if(localFingerprint===cloudFingerprint)state="match";
+  else if(anchorFingerprint){
+    const localAtAnchor=localFingerprint===anchorFingerprint;
+    const cloudAtAnchor=cloudFingerprint===anchorFingerprint;
+    if(localAtAnchor&&!cloudAtAnchor)state="cloud-changed";
+    else if(!localAtAnchor&&cloudAtAnchor)state="local-changed";
+    else if(!localAtAnchor&&!cloudAtAnchor)state="conflict";
+  }
+  return {state,localFingerprint,cloudFingerprint,anchorFingerprint,meta};
+}
+function mdRefShortDevice(id){const s=String(id||"");return s?s.slice(0,13):"unknown"}
+function mdRefFormatWhen(value){if(!value)return"unknown time";const d=new Date(value);return Number.isNaN(d.getTime())?String(value):d.toLocaleString()}
+function mdRefRenderDecision(decision=mdCloudSyncDecision){
+  const host=document.getElementById("cloudSyncDecision"),title=document.getElementById("cloudSyncDecisionTitle"),copy=document.getElementById("cloudSyncDecisionText");
+  const cloudMeta=document.getElementById("cloudSyncCloudMeta"),deviceMeta=document.getElementById("cloudSyncDeviceMeta");
+  if(!host||!title||!copy)return;
+  const state=decision?.state||"unknown";host.dataset.state=state;
+  const map={
+    "match":["MATCH · same reference state","Local and cloud reference fingerprints match. This is a safe common point."],
+    "cloud-changed":["CLOUD CHANGED","This device still matches the last common reference point, but cloud has changed since then. Preview Cloud → Local before applying."],
+    "local-changed":["LOCAL CHANGED","Cloud still matches the last common reference point, but this device has local reference changes. Review before uploading local reference data."],
+    "conflict":["CONFLICT · both sides changed","Local and cloud have both changed since the last common reference point. Neither side is automatically authoritative."],
+    "first-contact":["FIRST CONTACT · no common anchor yet","Local and cloud differ, but this device has no remembered common reference point yet. Compare carefully before choosing a direction."],
+    "cloud-empty":["CLOUD EMPTY","No cloud reference product snapshot exists yet. A deliberate local upload can establish the first cloud reference."],
+    "unknown":["Sync state: waiting","The app will compare local and cloud reference fingerprints after sign-in."]
+  };
+  const pair=map[state]||map.unknown;title.textContent=pair[0];copy.textContent=pair[1];
+  const meta=decision?.meta||{};
+  if(cloudMeta)cloudMeta.textContent=`Cloud: ${meta.uploaded_at?mdRefFormatWhen(meta.uploaded_at):"legacy/no timestamp"} · ${mdRefShortDevice(meta.source_device_id)}`;
+  if(deviceMeta)deviceMeta.textContent=`This device: ${mdRefShortDevice(mdRefDeviceId())}`;
+}
+function mdRefActionWarning(direction){
+  const state=mdCloudSyncDecision?.state||"unknown";
+  if(direction==="cloud-to-local"){
+    if(state==="conflict")return "CONFLICT WARNING\n\nBoth this device and cloud have changed since the last known common reference point.\n\nApplying Cloud → Local can overwrite local reference changes on matching product IDs. Operational records are still protected.\n\nContinue only if you reviewed the preview and intentionally want cloud reference values on this device.";
+    if(state==="local-changed")return "LOCAL CHANGES WARNING\n\nThis device has reference changes while cloud still matches the last common point.\n\nApplying Cloud → Local can overwrite those local reference changes on matching product IDs.\n\nContinue only if that is intentional.";
+  }
+  if(direction==="local-to-cloud"){
+    if(state==="conflict")return "CONFLICT WARNING\n\nBoth this device and cloud have changed since the last known common reference point.\n\nUploading local reference data can overwrite cloud reference values for matching rows. Cloud-only rows are not deleted.\n\nContinue only if you intentionally want this device to update cloud.";
+    if(state==="cloud-changed")return "CLOUD CHANGES WARNING\n\nCloud has changed while this device still matches the last common point.\n\nUploading this device can overwrite newer cloud reference values for matching rows.\n\nContinue only if that is intentional.";
+  }
+  return "";
 }
 
 function mdCloudRefSetStatus(message,state=""){
@@ -8735,11 +8901,14 @@ async function mdCloudRefCheck(options={}){
       const when=mdCloudReferenceLoadedAt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       mdCloudRefSetStatus(`Cloud reference layer loaded at ${when}: local ${local.length}, cloud ${(cloud.products||[]).length}. ${changed} cloud row(s) differ/extra and ${missing} local row(s) are not yet represented in cloud. Nothing was applied to local data.`,"warn");
     }
+    mdCloudSyncDecision=mdRefClassify(cloud);
+    if(mdCloudSyncDecision.state==="match")mdRefRememberAnchor(mdCloudSyncDecision.cloudFingerprint,mdCloudSyncDecision.meta);
+    mdRefRenderDecision(mdCloudSyncDecision);
     mdCloudMergePlan=mdCloudRefBuildMergePlan(cloud);
     mdCloudRefRenderMergePreview(mdCloudMergePlan);
     return true;
   }catch(err){
-    mdCloudMergePlan=null;mdCloudRefRenderMergePreview(null);
+    mdCloudMergePlan=null;mdCloudSyncDecision={state:"unknown",localFingerprint:null,cloudFingerprint:null,anchorFingerprint:null,meta:null};mdRefRenderDecision(mdCloudSyncDecision);mdCloudRefRenderMergePreview(null);
     document.getElementById("cloudRefCloudProducts").textContent="—";document.getElementById("cloudRefAliases").textContent="—";
     const msg=String(err?.message||err);
     if(/does not exist|relation|schema cache|Could not find/i.test(msg))mdCloudRefSetStatus("Stage 2A tables are not installed yet. Run the included SUPABASE-STAGE2A-SETUP.sql once in Supabase SQL Editor, then tap Check / Compare again.","warn");
@@ -8785,7 +8954,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.15-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.18-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -8794,6 +8963,8 @@ async function mdCloudRefApplyMerge(){
   const plan=mdCloudMergePlan||mdCloudRefBuildMergePlan();
   const total=plan.add.length+plan.update.length+plan.aliases.length;
   if(!total){mdCloudRefSetStatus("No cloud reference changes need to be applied.","ok");mdCloudRefRenderMergePreview(plan);return;}
+  const guard=mdRefActionWarning("cloud-to-local");
+  if(guard&&!confirm(guard)){mdCloudRefSetStatus("Cloud → Local merge cancelled by conflict guard. Nothing changed.");return;}
   const ok=confirm(`Apply the controlled DEV Cloud reference merge to this device?\n\nProducts to add: ${plan.add.length}\nProducts to update: ${plan.update.length}\nAlias mappings to merge: ${plan.aliases.length}\n\nNo local products will be deleted. Deliveries, Sunday reports, invoices and payments will not be changed. A one-step undo snapshot will be saved first.`);
   if(!ok){mdCloudRefSetStatus("Cloud → Local merge cancelled. Nothing changed.");return;}
   const btn=document.getElementById("cloudRefApplyMerge");if(btn)btn.disabled=true;
@@ -8834,16 +9005,33 @@ async function mdCloudRefUpsert(path,rows,onConflict){
 }
 async function mdCloudRefUpload(){
   if(!mdCloudSession?.access_token){mdCloudRefSetStatus("Sign in to DEV Cloud first.","warn");return;}
-  const products=(db.products||[]).map(p=>{const x=mdCloudRefCanonicalProduct(p);return {id:x.id,name:x.name,payload:x.payload,updated_at:new Date().toISOString()};});
-  const aliases=Object.entries(db.productAliases||{}).map(([alias_key,product_id])=>({alias_key:String(alias_key),product_id:String(product_id),updated_at:new Date().toISOString()}));
-  const rules={standard_profit_split:{shop:0.40,pin:0.30,alix:0.30},edible_profit_split:{shop:0.40,pin:0.40,alix:0.20},shops:["BM Bangrak","Lamai Minimart"],stage:"2A-reference-only",source_of_truth:"local-device"};
-  const ok=confirm(`Upload a DEV reference snapshot from this device?\n\nProducts: ${products.length}\nAliases: ${aliases.length}\n\nThis only creates/updates DEV reference rows. It does NOT replace local data and does NOT upload Sunday reports, deliveries, invoices or payments.`);
+  const now=new Date().toISOString();
+  const products=(db.products||[]).map(p=>{const x=mdCloudRefCanonicalProduct(p);return {id:x.id,name:x.name,payload:x.payload,updated_at:now};});
+  const aliases=Object.entries(db.productAliases||{}).map(([alias_key,product_id])=>({alias_key:String(alias_key),product_id:String(product_id),updated_at:now}));
+  const rules={standard_profit_split:{shop:0.40,pin:0.30,alix:0.30},edible_profit_split:{shop:0.40,pin:0.40,alix:0.20},shops:["BM Bangrak","Lamai Minimart"],stage:"2D-reference-sync-guard",source_of_truth:"explicit-user-decision"};
+  const fingerprint=mdRefFingerprint(mdRefStableStateFromLocal());
+  const snapshotId=`REF-${now.replace(/[-:.TZ]/g,"").slice(0,14)}-${mdRefDeviceId().replace(/^MD-/,"").slice(0,6)}`;
+  const guard=mdRefActionWarning("local-to-cloud");
+  if(guard&&!confirm(guard)){mdCloudRefSetStatus("Local → Cloud upload cancelled by conflict guard. Nothing changed.");return;}
+  const ok=confirm(`Upload a DEV reference snapshot from this device?\n\nProducts: ${products.length}\nAliases: ${aliases.length}\nReference fingerprint: ${fingerprint}\n\nThis only creates/updates DEV reference rows. It does NOT replace local data and does NOT upload Sunday reports, deliveries, invoices or payments.`);
   if(!ok){mdCloudRefSetStatus("Upload cancelled. Nothing changed.");return;}
   const btn=document.getElementById("cloudRefUpload");if(btn)btn.disabled=true;mdCloudRefSetStatus("Uploading DEV reference snapshot…");
   try{
     await mdCloudRefUpsert('/rest/v1/md_reference_products',products,'id');
     if(aliases.length)await mdCloudRefUpsert('/rest/v1/md_reference_aliases',aliases,'alias_key');
-    await mdCloudRefUpsert('/rest/v1/md_reference_settings',[{key:'business_rules',value:rules,updated_at:new Date().toISOString()},{key:'snapshot_meta',value:{app_version:'0.10.15-dev',product_count:products.length,alias_count:aliases.length,uploaded_at:new Date().toISOString()},updated_at:new Date().toISOString()}],'key');
+    await mdCloudRefUpsert('/rest/v1/md_reference_settings',[
+      {key:'business_rules',value:rules,updated_at:now},
+      {key:'snapshot_meta',value:{
+        schema_version:1,
+        snapshot_id:snapshotId,
+        app_version:'0.10.18-dev',
+        product_count:products.length,
+        alias_count:aliases.length,
+        uploaded_at:now,
+        source_device_id:mdRefDeviceId(),
+        reference_fingerprint:fingerprint
+      },updated_at:now}
+    ],'key');
     mdCloudRefSetStatus(`Upload complete: ${products.length} products and ${aliases.length} aliases copied to DEV Cloud. Verifying read-back…`,"ok");
     await mdCloudRefCheck();
   }catch(err){mdCloudRefSetStatus(`Upload failed: ${err?.message||err}`,"bad");}
@@ -8862,6 +9050,7 @@ function mdCloudInit(){
   document.getElementById("cloudRefUndoMerge")?.addEventListener("click",mdCloudRefUndoMerge);
   document.getElementById("cloudRefUpload")?.addEventListener("click",mdCloudRefUpload);
   mdCloudRefUpdateLocalMetric();
+  mdRefRenderDecision(mdCloudSyncDecision);
   mdCloudRefRenderMergePreview(null);
   document.getElementById("cloudDevPassword")?.addEventListener("keydown",e=>{if(e.key==="Enter")mdCloudSignIn();});
   if(mdCloudSession?.access_token)mdCloudVerifyDatabase();else mdCloudTestProject();
