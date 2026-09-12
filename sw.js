@@ -1,4 +1,4 @@
-const CACHE_NAME = "magic-dragon-pin-v0.10.8-dev";
+const CACHE_NAME = "magic-dragon-pin-v0.10.9-dev";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -26,6 +26,15 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
+  // v0.10.9 DEV: never intercept cross-origin API requests (e.g. Supabase).
+  // Safari can otherwise turn a failed/uncacheable API request into
+  // "FetchEvent.respondWith ... Returned response is null" and hide the real error.
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin !== self.location.origin) return;
+
+  // This service worker is only an offline cache for app assets/navigation.
+  if (event.request.method !== "GET" && event.request.method !== "HEAD") return;
+
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request, {cache: "no-store"})

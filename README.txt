@@ -1,9 +1,9 @@
-MAGIC DRAGON PIN v0.10.8 DEV — SUPABASE STAGE 1
+MAGIC DRAGON PIN v0.10.9 DEV — SUPABASE STAGE 1 HOTFIX
 
 Purpose:
 Development/staging build only. Production remains separate.
 
-What changed in v0.10.8 DEV:
+What changed in v0.10.9 DEV:
 - Added the Magic Dragon Pin DEV Supabase project URL and publishable browser key.
 - Added Settings > DEV Cloud Connection.
 - Existing DEV users can sign in with email/password.
@@ -21,4 +21,6 @@ Security:
 - Protected table access still requires an authenticated Supabase user and RLS policies.
 
 Visible marker:
-v0.10.8 DEV
+v0.10.9 DEV
+
+Hotfix v0.10.9: Service worker now bypasses all cross-origin API traffic so Supabase authentication is handled directly by Safari instead of the offline asset cache.
