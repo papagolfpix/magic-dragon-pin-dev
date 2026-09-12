@@ -3585,7 +3585,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 .cloudRefMetrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.cloudRefMetrics span{padding:8px;border:1px solid #e4e7ec;border-radius:10px;background:white;text-align:center}.cloudRefMetrics b{display:block;font-size:1.05rem}.cloudRefMetrics small{display:block;color:#667085;font-size:.72rem;margin-top:2px}.cloudStage2Actions{margin-top:9px;display:flex;gap:8px;flex-wrap:wrap}.cloudStage2Actions button{flex:1 1 190px}
 
 
-/* v0.10.20 — responsive A–Z delivery scrubber
+/* v0.10.21 — responsive A–Z delivery scrubber
    Visual letters and touch zones now share the same full-width grid. */
 .deliveryAlphabetScrubber{
   width:100%;
@@ -3625,7 +3625,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 }
 
 
-/* v0.10.20 — delivery picker visibility layout */
+/* v0.10.21 — delivery picker visibility layout */
 #deliveryEntryTools .deliveryPrimaryProduct{
   width:100%;
   margin-bottom:6px;
@@ -3639,7 +3639,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 }
 
 
-/* v0.10.20 — reusable reference sync decision / conflict guard */
+/* v0.10.21 — reusable reference sync decision / conflict guard */
 .cloudSyncDecision{display:grid;gap:6px;margin-top:8px;padding:9px 10px;border:1px solid #dbe1e9;border-radius:10px;background:#f8fafc}
 .cloudSyncDecision b{display:block;font-size:10.5px;color:#172033}
 .cloudSyncDecision small{display:block;margin-top:2px;font-size:8.5px;line-height:1.3;color:#667085}
@@ -3653,7 +3653,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 .cloudSyncDecision[data-state="cloud-empty"]{border-color:#e1cf9b;background:#fffaf0}
 
 
-/* v0.10.20 — permanent A–Z proportional scrubber
+/* v0.10.21 — permanent A–Z proportional scrubber
    26 visual cells share the exact same rendered geometry used by pointer mapping. */
 .deliveryAlphabetScrubber{
   width:100%;
@@ -3694,7 +3694,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 }
 
 
-/* v0.10.20 — responsive/UI hardening */
+/* v0.10.21 — responsive/UI hardening */
 
 /* Reusable proportional A–Z component — no page/container ID dependency. */
 .deliveryAlphabetWrap,
@@ -3792,6 +3792,42 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
   padding-right:0!important;
 }
 
+
+/* v0.10.21 — Master Catalogue → Context Filter → Task-Specific Picker */
+.restockContextBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  width:100%;
+  box-sizing:border-box;
+  margin:-1px 0 6px;
+  padding:6px 8px;
+  border:1px solid #e6cf92;
+  border-radius:9px;
+  background:#fffaf0;
+  color:#6e5314;
+  font-size:9px;
+  font-weight:800;
+}
+.restockContextToggle{
+  appearance:none;
+  -webkit-appearance:none;
+  border:1px solid #d6bd77;
+  border-radius:8px;
+  background:#fff;
+  color:#6e5314;
+  padding:5px 8px;
+  font:inherit;
+  font-size:9px;
+  font-weight:900;
+  white-space:nowrap;
+}
+@media(max-width:520px){
+  .restockContextBar{align-items:flex-start}
+  .restockContextToggle{flex:0 0 auto}
+}
+
 </style>
 </head>
 <body>
@@ -3806,7 +3842,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.20 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.21 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -4002,6 +4038,10 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
         <button id="deliveryEditAddToggle" class="deliveryEditAddToggle" type="button" style="display:none" onclick="toggleDeliveryEditAddTools()">＋ Add another product</button>
         <div id="deliveryEntryTools" class="deliveryEntryTools">
           <div class="field deliveryProductField deliveryPrimaryProduct"><label>Product</label><select id="delProduct"></select></div>
+          <div id="restockContextBar" class="restockContextBar" style="display:none">
+            <span id="restockContextText">Sunday restock list</span>
+            <button id="restockContextToggle" type="button" class="restockContextToggle" onclick="toggleRestockProductScope()">Show all products</button>
+          </div>
           <div class="field deliverySearch"><label>Find product</label><input id="deliveryProductSearch" type="search" placeholder="Type Pin's product name…" autocomplete="off"></div>
           <div class="deliveryAlphabetWrap" aria-label="Alphabet product finder">
             <div id="deliveryAlphabetScrubber" class="deliveryAlphabetScrubber" role="slider" aria-label="Find product by first letter" aria-valuemin="1" aria-valuemax="26" aria-valuenow="1" tabindex="0">
@@ -4749,13 +4789,18 @@ function canonicalDeliveryProducts(){
   });
   return out;
 }
+
+/* CATALOGUE CONTEXT LEGO CONTRACT v0.10.21
+   Master Catalogue = what is available.
+   Context Filter = what is relevant to the current task.
+   Task-Specific Picker = the user-facing subset.
+   Never hard-code branch availability merely to simplify a task picker.
+*/
+
 function branchProducts(branch){
-  const products=canonicalDeliveryProducts();
-  if(branch==="BM Bangrak") return products;
-  return products.filter(p => {
-    const n=p.name.toLowerCase();
-    return !p.name.includes("5g") && p.name!=="Gummy 4 Leaf" && p.name!=="Cali Mousse 1g";
-  });
+  // v0.10.21: branch availability comes from the shared active master catalogue.
+  // Task-specific filtering belongs in a context layer, never in hard-coded branch exclusions.
+  return canonicalDeliveryProducts();
 }
 let currentDelivery=[];
 let editingDocketId=null;
@@ -4764,12 +4809,81 @@ let deliveryEditOriginalSnapshot=null;
 let deliveryEditAffectedInvoiceId=null;
 let deliveryEditResolutionChoice="";
 let activeDeliveryLetter="";
+
+let restockShowAllProducts=false;
+
+function currentEditedDeliveryDocket(){
+  if(!editingDocketId)return null;
+  return (db.deliveries||[]).find(d=>d.id===editingDocketId)||null;
+}
+
+function sundayRestockContextProductIds(docket=currentEditedDeliveryDocket()){
+  if(!docket?.generatedFromSundaySuggestion)return null;
+
+  const ids=new Set();
+
+  // Prefer the exact Sunday report for this docket's branch/week.
+  const date=docket.sourceSundayDate||docket.date||"";
+  if(date && typeof wizardReportsForDate==="function"){
+    const item=(wizardReportsForDate(date)||[]).find(({report})=>
+      canonicalBranchName(report?.branch||"")===canonicalBranchName(docket.branch||"")
+    );
+    (item?.report?.rows||[]).forEach(row=>{
+      const match=canonicalProductMatchRow(row);
+      if(match?.product?.id)ids.add(String(match.product.id));
+    });
+  }
+
+  // Preserve products already present on the suggested draft, including any
+  // product Pin previously added manually outside the Sunday report.
+  (docket.lines||[]).forEach(line=>{if(line?.productId)ids.add(String(line.productId));});
+  (currentDelivery||[]).forEach(line=>{if(line?.productId)ids.add(String(line.productId));});
+
+  return ids;
+}
+
+function renderRestockContextBar(contextIds=sundayRestockContextProductIds()){
+  const bar=document.getElementById("restockContextBar");
+  const textEl=document.getElementById("restockContextText");
+  const btn=document.getElementById("restockContextToggle");
+  const docket=currentEditedDeliveryDocket();
+  const active=!!(docket?.generatedFromSundaySuggestion && contextIds);
+
+  if(!bar)return;
+  bar.style.display=active?"flex":"none";
+  if(!active)return;
+
+  const count=contextIds?.size||0;
+  if(textEl){
+    textEl.textContent=restockShowAllProducts
+      ? `Full catalogue · Sunday list has ${count} product${count===1?"":"s"}`
+      : `Sunday restock list · ${count} product${count===1?"":"s"}`;
+  }
+  if(btn){
+    btn.textContent=restockShowAllProducts?"Sunday list only":"Show all products";
+    btn.setAttribute("aria-pressed",restockShowAllProducts?"true":"false");
+  }
+}
+
+window.toggleRestockProductScope=()=>{
+  restockShowAllProducts=!restockShowAllProducts;
+  fillProducts();
+};
+
 function fillProducts(){
  const s=document.getElementById("delProduct"), b=document.getElementById("delBranch").value,q=norm(document.getElementById("deliveryProductSearch")?.value||"");
  const previous=s.value;
  let products=branchProducts(b).sort((a,b)=>a.name.localeCompare(b.name, "en", {sensitivity:"base", numeric:true}));
 
- // Typed search keeps its existing narrowing behaviour.
+ // Suggested Sunday restocks default to that branch/week's Sunday product context.
+ // This is a view filter only: both branches still retain full catalogue access.
+ const restockContextIds=sundayRestockContextProductIds();
+ if(restockContextIds && !restockShowAllProducts){
+   products=products.filter(p=>restockContextIds.has(String(p.id)));
+ }
+ renderRestockContextBar(restockContextIds);
+
+ // Typed search keeps its existing narrowing behaviour within the current context.
  if(q){
    products=products.filter(p=>norm(p.name).includes(q));
  }
@@ -5047,6 +5161,7 @@ document.getElementById("addDeliveryLine").onclick=()=>{
 }
 document.getElementById("clearDelivery").onclick=()=>{currentDelivery=[];renderDelivery()}
 function resetDeliveryEditor(){
+ restockShowAllProducts=false;
  editingDocketId=null; editingSuggestionId=null; currentDelivery=[]; deliveryEditOriginalSnapshot=null; deliveryEditAffectedInvoiceId=null; deliveryEditResolutionChoice="";
  document.getElementById("delNote").value="";
  document.getElementById("delQty").value="";
@@ -5306,6 +5421,7 @@ window.selectDocketArchive=id=>{
 function renderDocket(d){ renderDocketArchive(d?.id); }
 window.editDocket=id=>{
  const d=db.deliveries.find(x=>x.id===id); if(!d)return alert("Delivery docket not found.");
+ restockShowAllProducts=false;
  editingDocketId=id;
  deliveryEditOriginalSnapshot=JSON.parse(JSON.stringify(d));
  const affectedInvoice=affectedInvoiceForDocket(d); deliveryEditAffectedInvoiceId=affectedInvoice?.id||null; deliveryEditResolutionChoice="";
@@ -5891,7 +6007,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.20-dev",
+    appVersion:"0.10.21-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -7475,7 +7591,7 @@ function calcImport(){
 
 
 
-/* RESPONSIVE LEGO CONTRACT v0.10.20
+/* RESPONSIVE LEGO CONTRACT v0.10.21
    Proportional touch component:
    - component-scoped styling, never accidental page-ID coupling;
    - one rendered track;
@@ -8793,7 +8909,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.20-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.21-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -8825,7 +8941,7 @@ document.getElementById("fillMasterCurrent").onclick=()=>renderMasterProductSetu
 document.getElementById("saveMasterProducts").onclick=applyMasterProductSetup;
 document.getElementById("resetData").onclick=()=>{if(confirm("Delete all local Magic Dragon Pin data on this browser?")){localStorage.removeItem("mdpin-db");location.reload()}}
 
-// v0.10.20 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
+// v0.10.21 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
 const MDPIN_SUPABASE_URL="https://bzgkeshxbnhnlrpdgbtb.supabase.co";
 const MDPIN_SUPABASE_PUBLISHABLE_KEY="sb_publishable_8EReyQFUFSe6SPHCBLhU7g_zp8j18_D";
 const MDPIN_SUPABASE_SESSION_KEY="mdpin-supabase-dev-session";
@@ -9123,7 +9239,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.20-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.21-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -9193,7 +9309,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.20-dev',
+        app_version:'0.10.21-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,
