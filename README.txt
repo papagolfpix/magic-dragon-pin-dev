@@ -1,35 +1,23 @@
-MAGIC DRAGON PIN v0.10.19 DEV — PERMANENT A–Z SCRUBBER FIX
+MAGIC DRAGON PIN v0.10.20 DEV — RESPONSIVE/UI HARDENING
 
-Built from v0.10.18 DEV Stage 2D.
+Built from v0.10.19 DEV.
 
-ROOT CAUSE
-The alphabet was displayed as one spaced text string while pointer selection used proportional math across the scrubber width.
-On wider displays, rendered text spacing and touch geometry could still diverge.
+FIXES
+- Removed all A–Z scrubber styling coupled to #delivery or #docket.
+- The A–Z is now a component-level reusable control.
+- 26 real cells occupy the full rendered track width.
+- Pointer geometry and visual geometry share the same track.
+- Product stays above Find Product and A–Z.
+- Product/search stay full width; Qty + Add Line remain compact on larger screens.
+- Tablet text scales without altering hit geometry.
 
-PERMANENT FIX
-- Replaced the text string with 26 real DOM letter cells.
-- Each cell owns exactly 1/26 of the rendered track width.
-- Pointer/touch index is calculated from the exact same rendered track.
-- The floating thumb snaps to the center of the real selected cell.
-- Selected cell receives a visual emphasis.
-- Font/word spacing can no longer distort the letter geometry.
+AUDIT
+Static scan found 1 raw clientX/width proportional-interaction candidate(s) in the full source.
+No unrelated control was rewritten without a proven defect.
 
-REUSABLE LEGO CONTRACT
-PROPORTIONAL SCRUBBER =
-  ONE RENDERED TRACK
-  + N EQUAL VISUAL CELLS
-  + POINTER INDEX CALCULATED FROM THAT SAME TRACK
-  + OPTIONAL THUMB POSITIONED FROM THE SELECTED CELL
-
-Never use text spacing as touch geometry.
+LEGO CONTRACT
+Component-scoped CSS + one rendered track + N equal visual cells + pointer index from same track + optional thumb from selected cell centre.
 
 NO BUSINESS LOGIC CHANGES
-Supabase Stage 2D, reference sync guard, Delivery business logic, Sunday workflow,
-invoices, Backup & Recovery, catalogue behavior and keyboard-safe input logic are unchanged.
-
-TEST
-1. Open New Delivery on iPad.
-2. Drag slowly from A to Z.
-3. Confirm the selected letter/thumb follows the visible letter under the finger.
-4. Repeat in landscape if convenient.
-5. Repeat on iPhone to confirm no regression.
+Supabase Stage 2D, Delivery calculations, Sunday workflow, invoices, catalogue,
+Backup & Recovery and keyboard-safe behavior are unchanged.

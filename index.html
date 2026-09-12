@@ -2240,27 +2240,27 @@ body.docketMode .docketActiveScroll{display:block!important}
 
 
 /* v0.10.8 DEV — experimental A–Z delivery product scrubber */
-#delivery .deliveryAlphabetWrap{margin:2px 0 4px}
-#delivery .deliveryAlphabetScrubber{
+.deliveryAlphabetWrap{margin:2px 0 4px}
+.deliveryAlphabetScrubber{
   position:relative;width:100%;height:30px;box-sizing:border-box;display:flex;align-items:center;
   border:1px solid #cfd6e1;border-radius:9px;background:#f8fafc;user-select:none;-webkit-user-select:none;
   touch-action:none;cursor:ew-resize;-webkit-tap-highlight-color:transparent
 }
-#delivery .deliveryAlphabetLetters{
+.deliveryAlphabetLetters{
   width:100%;box-sizing:border-box;padding:0 5px;white-space:nowrap;overflow:hidden;text-align:center;
   color:#667085;font-size:7.4px;line-height:1;font-weight:850;letter-spacing:.15px;pointer-events:none
 }
-#delivery .deliveryAlphabetThumb{
+.deliveryAlphabetThumb{
   position:absolute;z-index:4;left:0;top:50%;transform:translate(-50%,-50%);
   width:28px;height:28px;display:none;place-items:center;border-radius:8px;background:#172033;color:#fff;
   border:2px solid #fff;box-shadow:0 2px 7px rgba(23,32,51,.24);font-size:14px;line-height:1;font-weight:950;
   pointer-events:none
 }
-#delivery .deliveryAlphabetScrubber.active{border-color:#9a7114;background:#fffdf7}
+.deliveryAlphabetScrubber.active{border-color:#9a7114;background:#fffdf7}
 @media(max-width:430px){
-  #delivery .deliveryAlphabetScrubber{height:29px;border-radius:8px}
-  #delivery .deliveryAlphabetLetters{font-size:7px;padding:0 4px;letter-spacing:0}
-  #delivery .deliveryAlphabetThumb{width:27px;height:27px;font-size:13px}
+  .deliveryAlphabetScrubber{height:29px;border-radius:8px}
+  .deliveryAlphabetLetters{font-size:7px;padding:0 4px;letter-spacing:0}
+  .deliveryAlphabetThumb{width:27px;height:27px;font-size:13px}
 }
 
 
@@ -3585,13 +3585,13 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 .cloudRefMetrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.cloudRefMetrics span{padding:8px;border:1px solid #e4e7ec;border-radius:10px;background:white;text-align:center}.cloudRefMetrics b{display:block;font-size:1.05rem}.cloudRefMetrics small{display:block;color:#667085;font-size:.72rem;margin-top:2px}.cloudStage2Actions{margin-top:9px;display:flex;gap:8px;flex-wrap:wrap}.cloudStage2Actions button{flex:1 1 190px}
 
 
-/* v0.10.19 — responsive A–Z delivery scrubber
+/* v0.10.20 — responsive A–Z delivery scrubber
    Visual letters and touch zones now share the same full-width grid. */
-#delivery .deliveryAlphabetScrubber{
+.deliveryAlphabetScrubber{
   width:100%;
   box-sizing:border-box;
 }
-#delivery .deliveryAlphabetTrack{
+.deliveryAlphabetTrack{
   width:100%;
   display:grid!important;
   grid-template-columns:repeat(26,minmax(0,1fr))!important;
@@ -3600,13 +3600,13 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
   gap:0!important;
   box-sizing:border-box;
 }
-#delivery .deliveryAlphabetTrack > *{
+.deliveryAlphabetTrack > *{
   min-width:0!important;
   width:100%!important;
   text-align:center!important;
   box-sizing:border-box;
 }
-#delivery .deliveryAlphabetLetter{
+.deliveryAlphabetLetter{
   display:flex!important;
   align-items:center;
   justify-content:center;
@@ -3619,13 +3619,13 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
   -webkit-user-select:none;
 }
 @media (min-width:700px){
-  #delivery .deliveryAlphabetLetter{
+  .deliveryAlphabetLetter{
     font-size:11px!important;
   }
 }
 
 
-/* v0.10.19 — delivery picker visibility layout */
+/* v0.10.20 — delivery picker visibility layout */
 #deliveryEntryTools .deliveryPrimaryProduct{
   width:100%;
   margin-bottom:6px;
@@ -3639,7 +3639,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 }
 
 
-/* v0.10.19 — reusable reference sync decision / conflict guard */
+/* v0.10.20 — reusable reference sync decision / conflict guard */
 .cloudSyncDecision{display:grid;gap:6px;margin-top:8px;padding:9px 10px;border:1px solid #dbe1e9;border-radius:10px;background:#f8fafc}
 .cloudSyncDecision b{display:block;font-size:10.5px;color:#172033}
 .cloudSyncDecision small{display:block;margin-top:2px;font-size:8.5px;line-height:1.3;color:#667085}
@@ -3653,14 +3653,14 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 .cloudSyncDecision[data-state="cloud-empty"]{border-color:#e1cf9b;background:#fffaf0}
 
 
-/* v0.10.19 — permanent A–Z proportional scrubber
+/* v0.10.20 — permanent A–Z proportional scrubber
    26 visual cells share the exact same rendered geometry used by pointer mapping. */
-#delivery .deliveryAlphabetScrubber{
+.deliveryAlphabetScrubber{
   width:100%;
   box-sizing:border-box;
   touch-action:none;
 }
-#delivery .deliveryAlphabetTrack{
+.deliveryAlphabetTrack{
   width:100%;
   display:grid!important;
   grid-template-columns:repeat(26,minmax(0,1fr))!important;
@@ -3671,7 +3671,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
   word-spacing:0!important;
   box-sizing:border-box;
 }
-#delivery .deliveryAlphabetLetter{
+.deliveryAlphabetLetter{
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
@@ -3686,11 +3686,110 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
   -webkit-user-select:none!important;
   pointer-events:none!important;
 }
-#delivery .deliveryAlphabetLetter.selected{
+.deliveryAlphabetLetter.selected{
   font-weight:950!important;
 }
 @media (min-width:700px){
-  #delivery .deliveryAlphabetLetter{font-size:12px!important}
+  .deliveryAlphabetLetter{font-size:12px!important}
+}
+
+
+/* v0.10.20 — responsive/UI hardening */
+
+/* Reusable proportional A–Z component — no page/container ID dependency. */
+.deliveryAlphabetWrap,
+.deliveryAlphabetScrubber,
+.deliveryAlphabetTrack{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+.deliveryAlphabetScrubber{
+  position:relative;
+  touch-action:none;
+  overflow:visible;
+}
+.deliveryAlphabetTrack{
+  display:grid!important;
+  grid-template-columns:repeat(26,minmax(0,1fr))!important;
+  gap:0!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+  padding-left:0!important;
+  padding-right:0!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  letter-spacing:0!important;
+  word-spacing:0!important;
+}
+.deliveryAlphabetLetter{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:100%!important;
+  padding:0!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  text-align:center!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+}
+
+/* Delivery picker layout — result above interaction controls. */
+#deliveryEntryTools{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+}
+#deliveryEntryTools .deliveryPrimaryProduct,
+#deliveryEntryTools .deliverySearch,
+#deliveryEntryTools .deliveryAlphabetWrap{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+#deliveryEntryTools .deliveryPrimaryProduct select,
+#deliveryEntryTools .deliverySearch input{
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+#deliveryEntryTools .deliveryAddRow{
+  display:grid!important;
+  grid-template-columns:minmax(84px,140px) max-content!important;
+  justify-content:start!important;
+  align-items:end!important;
+  gap:8px!important;
+}
+#deliveryEntryTools .deliveryQtyField{
+  min-width:84px!important;
+  max-width:140px!important;
+}
+#deliveryEntryTools .deliveryAddButton{
+  width:auto!important;
+  min-width:96px!important;
+}
+@media (min-width:700px){
+  .deliveryAlphabetLetter{
+    font-size:clamp(10px,1.15vw,14px)!important;
+  }
+  #deliveryCreatePane .deliveryTopPane{
+    padding-left:12px!important;
+    padding-right:12px!important;
+  }
+}
+
+/* Generic marker for proportional-touch Lego blocks. */
+.proportionalTouchTrack{
+  box-sizing:border-box!important;
+  padding-left:0!important;
+  padding-right:0!important;
 }
 
 </style>
@@ -3707,7 +3806,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.19 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.20 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -3906,7 +4005,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
           <div class="field deliverySearch"><label>Find product</label><input id="deliveryProductSearch" type="search" placeholder="Type Pin's product name…" autocomplete="off"></div>
           <div class="deliveryAlphabetWrap" aria-label="Alphabet product finder">
             <div id="deliveryAlphabetScrubber" class="deliveryAlphabetScrubber" role="slider" aria-label="Find product by first letter" aria-valuemin="1" aria-valuemax="26" aria-valuenow="1" tabindex="0">
-              <div class="deliveryAlphabetLetters deliveryAlphabetTrack" aria-hidden="true"><span class="deliveryAlphabetLetter" data-letter="A">A</span><span class="deliveryAlphabetLetter" data-letter="B">B</span><span class="deliveryAlphabetLetter" data-letter="C">C</span><span class="deliveryAlphabetLetter" data-letter="D">D</span><span class="deliveryAlphabetLetter" data-letter="E">E</span><span class="deliveryAlphabetLetter" data-letter="F">F</span><span class="deliveryAlphabetLetter" data-letter="G">G</span><span class="deliveryAlphabetLetter" data-letter="H">H</span><span class="deliveryAlphabetLetter" data-letter="I">I</span><span class="deliveryAlphabetLetter" data-letter="J">J</span><span class="deliveryAlphabetLetter" data-letter="K">K</span><span class="deliveryAlphabetLetter" data-letter="L">L</span><span class="deliveryAlphabetLetter" data-letter="M">M</span><span class="deliveryAlphabetLetter" data-letter="N">N</span><span class="deliveryAlphabetLetter" data-letter="O">O</span><span class="deliveryAlphabetLetter" data-letter="P">P</span><span class="deliveryAlphabetLetter" data-letter="Q">Q</span><span class="deliveryAlphabetLetter" data-letter="R">R</span><span class="deliveryAlphabetLetter" data-letter="S">S</span><span class="deliveryAlphabetLetter" data-letter="T">T</span><span class="deliveryAlphabetLetter" data-letter="U">U</span><span class="deliveryAlphabetLetter" data-letter="V">V</span><span class="deliveryAlphabetLetter" data-letter="W">W</span><span class="deliveryAlphabetLetter" data-letter="X">X</span><span class="deliveryAlphabetLetter" data-letter="Y">Y</span><span class="deliveryAlphabetLetter" data-letter="Z">Z</span></div>
+              <div class="deliveryAlphabetLetters deliveryAlphabetTrack proportionalTouchTrack" aria-hidden="true"><span class="deliveryAlphabetLetter" data-letter="A">A</span><span class="deliveryAlphabetLetter" data-letter="B">B</span><span class="deliveryAlphabetLetter" data-letter="C">C</span><span class="deliveryAlphabetLetter" data-letter="D">D</span><span class="deliveryAlphabetLetter" data-letter="E">E</span><span class="deliveryAlphabetLetter" data-letter="F">F</span><span class="deliveryAlphabetLetter" data-letter="G">G</span><span class="deliveryAlphabetLetter" data-letter="H">H</span><span class="deliveryAlphabetLetter" data-letter="I">I</span><span class="deliveryAlphabetLetter" data-letter="J">J</span><span class="deliveryAlphabetLetter" data-letter="K">K</span><span class="deliveryAlphabetLetter" data-letter="L">L</span><span class="deliveryAlphabetLetter" data-letter="M">M</span><span class="deliveryAlphabetLetter" data-letter="N">N</span><span class="deliveryAlphabetLetter" data-letter="O">O</span><span class="deliveryAlphabetLetter" data-letter="P">P</span><span class="deliveryAlphabetLetter" data-letter="Q">Q</span><span class="deliveryAlphabetLetter" data-letter="R">R</span><span class="deliveryAlphabetLetter" data-letter="S">S</span><span class="deliveryAlphabetLetter" data-letter="T">T</span><span class="deliveryAlphabetLetter" data-letter="U">U</span><span class="deliveryAlphabetLetter" data-letter="V">V</span><span class="deliveryAlphabetLetter" data-letter="W">W</span><span class="deliveryAlphabetLetter" data-letter="X">X</span><span class="deliveryAlphabetLetter" data-letter="Y">Y</span><span class="deliveryAlphabetLetter" data-letter="Z">Z</span></div>
               <div id="deliveryAlphabetThumb" class="deliveryAlphabetThumb" aria-hidden="true">A</div>
             </div>
           </div>
@@ -5792,7 +5891,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.19-dev",
+    appVersion:"0.10.20-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -7375,6 +7474,17 @@ function calcImport(){
 
 
 
+
+/* RESPONSIVE LEGO CONTRACT v0.10.20
+   Proportional touch component:
+   - component-scoped styling, never accidental page-ID coupling;
+   - one rendered track;
+   - N equal visual cells;
+   - pointer index from that same rendered track;
+   - optional thumb positioned from selected cell centre;
+   - typography/padding/gaps never define hit geometry.
+*/
+
 const DELIVERY_ALPHA="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function deliveryAlphabetCells(){
   const track=document.querySelector("#deliveryAlphabetScrubber .deliveryAlphabetTrack");
@@ -8683,7 +8793,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.19-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.20-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -8715,7 +8825,7 @@ document.getElementById("fillMasterCurrent").onclick=()=>renderMasterProductSetu
 document.getElementById("saveMasterProducts").onclick=applyMasterProductSetup;
 document.getElementById("resetData").onclick=()=>{if(confirm("Delete all local Magic Dragon Pin data on this browser?")){localStorage.removeItem("mdpin-db");location.reload()}}
 
-// v0.10.19 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
+// v0.10.20 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
 const MDPIN_SUPABASE_URL="https://bzgkeshxbnhnlrpdgbtb.supabase.co";
 const MDPIN_SUPABASE_PUBLISHABLE_KEY="sb_publishable_8EReyQFUFSe6SPHCBLhU7g_zp8j18_D";
 const MDPIN_SUPABASE_SESSION_KEY="mdpin-supabase-dev-session";
@@ -9013,7 +9123,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.19-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.20-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -9083,7 +9193,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.19-dev',
+        app_version:'0.10.20-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,
