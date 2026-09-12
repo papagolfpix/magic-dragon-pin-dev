@@ -1,14 +1,24 @@
-MAGIC DRAGON PIN v0.10.7 DEV — STAGING SEPARATION TEST
+MAGIC DRAGON PIN v0.10.8 DEV — SUPABASE STAGE 1
 
 Purpose:
-This build is intentionally for the DEVELOPMENT/STAGING repository only.
+Development/staging build only. Production remains separate.
+
+What changed in v0.10.8 DEV:
+- Added the Magic Dragon Pin DEV Supabase project URL and publishable browser key.
+- Added Settings > DEV Cloud Connection.
+- Existing DEV users can sign in with email/password.
+- App verifies authenticated Row Level Security access by reading the DEV shops table.
+- Session is retained on the device so the connection can survive reloads.
+- Added explicit Sign out and Verify Database Access controls.
+
+Important staged-safety rule:
+THIS BUILD DOES NOT SYNC OR REPLACE MAGIC DRAGON BUSINESS DATA YET.
+All existing products, Sunday reports, delivery dockets, invoices, mappings and settings continue to use the existing local browser database. This build proves secure authentication/database access first. Cloud migration/sync will be introduced deliberately in later DEV builds after verification.
+
+Security:
+- Only the Supabase publishable key is embedded in this browser build.
+- No sb_secret/service-role key is included.
+- Protected table access still requires an authenticated Supabase user and RLS policies.
 
 Visible marker:
-A DEV badge appears beside the version number so the staging site can be identified immediately.
-
-Expected result:
-- Development site changes to v0.10.7 DEV.
-- Production site remains on its current Pin production version.
-
-No business logic has been changed.
-This build exists only to prove production and development are isolated.
+v0.10.8 DEV
