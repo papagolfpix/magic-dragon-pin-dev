@@ -1511,7 +1511,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.13-dev",
+    appVersion:"0.10.14-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -4400,7 +4400,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.13-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.14-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -4432,13 +4432,15 @@ document.getElementById("fillMasterCurrent").onclick=()=>renderMasterProductSetu
 document.getElementById("saveMasterProducts").onclick=applyMasterProductSetup;
 document.getElementById("resetData").onclick=()=>{if(confirm("Delete all local Magic Dragon Pin data on this browser?")){localStorage.removeItem("mdpin-db");location.reload()}}
 
-// v0.10.13 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
+// v0.10.14 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
 const MDPIN_SUPABASE_URL="https://bzgkeshxbnhnlrpdgbtb.supabase.co";
 const MDPIN_SUPABASE_PUBLISHABLE_KEY="sb_publishable_8EReyQFUFSe6SPHCBLhU7g_zp8j18_D";
 const MDPIN_SUPABASE_SESSION_KEY="mdpin-supabase-dev-session";
 let mdCloudSession=null;
 let mdCloudReferenceSnapshot=null;
 let mdCloudReferenceLoadedAt=null;
+let mdCloudMergePlan=null;
+const MDPIN_STAGE2C_UNDO_KEY="mdpin-stage2c-reference-undo";
 
 function mdCloudSetStatus(message,state="idle"){
   const dot=document.getElementById("cloudDevDot"), text=document.getElementById("cloudDevStatusText");
@@ -4582,8 +4584,11 @@ async function mdCloudRefCheck(options={}){
       const when=mdCloudReferenceLoadedAt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       mdCloudRefSetStatus(`Cloud reference layer loaded at ${when}: local ${local.length}, cloud ${(cloud.products||[]).length}. ${changed} cloud row(s) differ/extra and ${missing} local row(s) are not yet represented in cloud. Nothing was applied to local data.`,"warn");
     }
+    mdCloudMergePlan=mdCloudRefBuildMergePlan(cloud);
+    mdCloudRefRenderMergePreview(mdCloudMergePlan);
     return true;
   }catch(err){
+    mdCloudMergePlan=null;mdCloudRefRenderMergePreview(null);
     document.getElementById("cloudRefCloudProducts").textContent="—";document.getElementById("cloudRefAliases").textContent="—";
     const msg=String(err?.message||err);
     if(/does not exist|relation|schema cache|Could not find/i.test(msg))mdCloudRefSetStatus("Stage 2A tables are not installed yet. Run the included SUPABASE-STAGE2A-SETUP.sql once in Supabase SQL Editor, then tap Check / Compare again.","warn");
@@ -4591,6 +4596,86 @@ async function mdCloudRefCheck(options={}){
     return false;
   }
 }
+
+function mdCloudRefBuildMergePlan(cloud=mdCloudReferenceSnapshot){
+  const cloudProducts=(cloud?.products||[]).map(r=>mdCloudRefCanonicalProduct(r.payload||r)).filter(p=>p.id);
+  const localMap=new Map((db.products||[]).map(p=>[String(p.id),mdCloudRefCanonicalProduct(p)]));
+  const add=[],update=[];
+  cloudProducts.forEach(cp=>{
+    const lp=localMap.get(cp.id);
+    if(!lp)add.push(cp);
+    else if(mdCloudRefStableProduct(lp)!==mdCloudRefStableProduct(cp))update.push({local:lp,cloud:cp});
+  });
+  const aliases=[];
+  const localAliases=db.productAliases||{};
+  (cloud?.aliases||[]).forEach(a=>{
+    const key=String(a.alias_key||""),pid=String(a.product_id||"");
+    if(key&&pid&&String(localAliases[key]||"")!==pid)aliases.push({alias_key:key,product_id:pid,from:localAliases[key]||null});
+  });
+  return {add,update,aliases,cloudProductsCount:cloudProducts.length,cloudAliasesCount:(cloud?.aliases||[]).length};
+}
+function mdCloudRefRenderMergePreview(plan=mdCloudMergePlan){
+  const el=document.getElementById("cloudMergePreview"),apply=document.getElementById("cloudRefApplyMerge"),undo=document.getElementById("cloudRefUndoMerge");
+  if(undo)undo.disabled=!localStorage.getItem(MDPIN_STAGE2C_UNDO_KEY);
+  if(!el)return;
+  if(!plan){el.style.display="none";if(apply)apply.disabled=true;return;}
+  const n=plan.add.length+plan.update.length+plan.aliases.length;
+  el.style.display="block";
+  if(!n){el.innerHTML="<strong>Merge preview:</strong> no changes are required. This device already matches the cloud reference snapshot.";if(apply)apply.disabled=true;return;}
+  const names=[...plan.add.slice(0,3).map(x=>`add ${escapeHtml(x.name)}`),...plan.update.slice(0,3).map(x=>`update ${escapeHtml(x.cloud.name)}`)];
+  el.innerHTML=`<strong>Merge preview:</strong> ${plan.add.length} product(s) to add · ${plan.update.length} product(s) to update · ${plan.aliases.length} alias mapping(s) to merge.${names.length?`<br><span class="small">Examples: ${names.join(" · ")}${plan.add.length+plan.update.length>names.length?" · …":""}</span>`:""}<br><span class="small">No local products will be deleted. Operational records are untouched.</span>`;
+  if(apply)apply.disabled=false;
+}
+async function mdCloudRefPreviewMerge(){
+  if(!mdCloudSession?.access_token){mdCloudRefSetStatus("Sign in to DEV Cloud first.","warn");return false;}
+  if(!mdCloudReferenceSnapshot){const ok=await mdCloudRefCheck();if(!ok)return false;}
+  mdCloudMergePlan=mdCloudRefBuildMergePlan();
+  mdCloudRefRenderMergePreview(mdCloudMergePlan);
+  return true;
+}
+function mdCloudRefSaveUndoSnapshot(){
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.14-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
+  return snap;
+}
+async function mdCloudRefApplyMerge(){
+  if(!mdCloudMergePlan){const ok=await mdCloudRefPreviewMerge();if(!ok)return;}
+  const plan=mdCloudMergePlan||mdCloudRefBuildMergePlan();
+  const total=plan.add.length+plan.update.length+plan.aliases.length;
+  if(!total){mdCloudRefSetStatus("No cloud reference changes need to be applied.","ok");mdCloudRefRenderMergePreview(plan);return;}
+  const ok=confirm(`Apply the controlled DEV Cloud reference merge to this device?\n\nProducts to add: ${plan.add.length}\nProducts to update: ${plan.update.length}\nAlias mappings to merge: ${plan.aliases.length}\n\nNo local products will be deleted. Deliveries, Sunday reports, invoices and payments will not be changed. A one-step undo snapshot will be saved first.`);
+  if(!ok){mdCloudRefSetStatus("Cloud → Local merge cancelled. Nothing changed.");return;}
+  const btn=document.getElementById("cloudRefApplyMerge");if(btn)btn.disabled=true;
+  try{
+    mdCloudRefSaveUndoSnapshot();
+    const byId=new Map((db.products||[]).map(p=>[String(p.id),p]));
+    (mdCloudReferenceSnapshot?.products||[]).forEach(r=>{
+      const payload=JSON.parse(JSON.stringify(r.payload||r||{})),id=String(r.id||payload.id||"");if(!id)return;payload.id=id;
+      const existing=byId.get(id);
+      if(existing)Object.assign(existing,payload,{id});
+      else{db.products.push(payload);byId.set(id,payload);}
+    });
+    ensureProductAliases();
+    (mdCloudReferenceSnapshot?.aliases||[]).forEach(a=>{const k=String(a.alias_key||""),pid=String(a.product_id||"");if(k&&pid&&byId.has(pid))db.productAliases[k]=pid;});
+    save();
+    mdCloudRefSetStatus(`Controlled merge applied: ${plan.add.length} product(s) added, ${plan.update.length} updated and ${plan.aliases.length} alias mapping(s) merged. Operational records were not changed.`,"ok");
+    mdCloudMergePlan=null;
+    await mdCloudRefCheck();
+    await mdCloudRefPreviewMerge();
+  }catch(err){mdCloudRefSetStatus(`Controlled merge failed: ${err?.message||err}`,"bad");}
+  finally{if(btn)btn.disabled=false;mdCloudRefRenderMergePreview(mdCloudMergePlan);}
+}
+function mdCloudRefUndoMerge(){
+  let snap=null;try{snap=JSON.parse(localStorage.getItem(MDPIN_STAGE2C_UNDO_KEY)||"null");}catch(e){}
+  if(!snap?.products||!snap?.productAliases){mdCloudRefSetStatus("No Stage 2C undo snapshot is available.","warn");mdCloudRefRenderMergePreview(mdCloudMergePlan);return;}
+  const when=snap.createdAt?new Date(snap.createdAt).toLocaleString():"the last merge";
+  if(!confirm(`Undo the last controlled cloud reference merge from ${when}?\n\nThis restores only the local product catalogue and alias mappings saved immediately before that merge. Operational records remain untouched.`))return;
+  db.products=JSON.parse(JSON.stringify(snap.products));db.productAliases=JSON.parse(JSON.stringify(snap.productAliases));
+  localStorage.removeItem(MDPIN_STAGE2C_UNDO_KEY);save();
+  mdCloudRefSetStatus("Last Stage 2C cloud reference merge undone. Operational records were unchanged.","ok");
+  mdCloudMergePlan=null;mdCloudRefCheck().then(()=>mdCloudRefPreviewMerge());
+}
+
 async function mdCloudRefUpsert(path,rows,onConflict){
   if(!rows.length)return;
   const response=await mdCloudAuthFetch(`${path}?on_conflict=${encodeURIComponent(onConflict)}`,{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)});
@@ -4607,7 +4692,7 @@ async function mdCloudRefUpload(){
   try{
     await mdCloudRefUpsert('/rest/v1/md_reference_products',products,'id');
     if(aliases.length)await mdCloudRefUpsert('/rest/v1/md_reference_aliases',aliases,'alias_key');
-    await mdCloudRefUpsert('/rest/v1/md_reference_settings',[{key:'business_rules',value:rules,updated_at:new Date().toISOString()},{key:'snapshot_meta',value:{app_version:'0.10.13-dev',product_count:products.length,alias_count:aliases.length,uploaded_at:new Date().toISOString()},updated_at:new Date().toISOString()}],'key');
+    await mdCloudRefUpsert('/rest/v1/md_reference_settings',[{key:'business_rules',value:rules,updated_at:new Date().toISOString()},{key:'snapshot_meta',value:{app_version:'0.10.14-dev',product_count:products.length,alias_count:aliases.length,uploaded_at:new Date().toISOString()},updated_at:new Date().toISOString()}],'key');
     mdCloudRefSetStatus(`Upload complete: ${products.length} products and ${aliases.length} aliases copied to DEV Cloud. Verifying read-back…`,"ok");
     await mdCloudRefCheck();
   }catch(err){mdCloudRefSetStatus(`Upload failed: ${err?.message||err}`,"bad");}
@@ -4620,9 +4705,13 @@ function mdCloudInit(){
   document.getElementById("cloudDevSignIn")?.addEventListener("click",mdCloudSignIn);
   document.getElementById("cloudDevVerify")?.addEventListener("click",mdCloudVerifyDatabase);
   document.getElementById("cloudDevSignOut")?.addEventListener("click",mdCloudSignOut);
-  document.getElementById("cloudRefCheck")?.addEventListener("click",mdCloudRefCheck);
+  document.getElementById("cloudRefCheck")?.addEventListener("click",async()=>{await mdCloudRefCheck();await mdCloudRefPreviewMerge();});
+  document.getElementById("cloudRefPreviewMerge")?.addEventListener("click",mdCloudRefPreviewMerge);
+  document.getElementById("cloudRefApplyMerge")?.addEventListener("click",mdCloudRefApplyMerge);
+  document.getElementById("cloudRefUndoMerge")?.addEventListener("click",mdCloudRefUndoMerge);
   document.getElementById("cloudRefUpload")?.addEventListener("click",mdCloudRefUpload);
   mdCloudRefUpdateLocalMetric();
+  mdCloudRefRenderMergePreview(null);
   document.getElementById("cloudDevPassword")?.addEventListener("keydown",e=>{if(e.key==="Enter")mdCloudSignIn();});
   if(mdCloudSession?.access_token)mdCloudVerifyDatabase();else mdCloudTestProject();
 }
