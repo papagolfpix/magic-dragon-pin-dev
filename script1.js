@@ -1511,7 +1511,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.12-dev",
+    appVersion:"0.10.13-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -4400,7 +4400,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.12-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.13-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -4432,11 +4432,13 @@ document.getElementById("fillMasterCurrent").onclick=()=>renderMasterProductSetu
 document.getElementById("saveMasterProducts").onclick=applyMasterProductSetup;
 document.getElementById("resetData").onclick=()=>{if(confirm("Delete all local Magic Dragon Pin data on this browser?")){localStorage.removeItem("mdpin-db");location.reload()}}
 
-// v0.10.12 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
+// v0.10.13 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
 const MDPIN_SUPABASE_URL="https://bzgkeshxbnhnlrpdgbtb.supabase.co";
 const MDPIN_SUPABASE_PUBLISHABLE_KEY="sb_publishable_8EReyQFUFSe6SPHCBLhU7g_zp8j18_D";
 const MDPIN_SUPABASE_SESSION_KEY="mdpin-supabase-dev-session";
 let mdCloudSession=null;
+let mdCloudReferenceSnapshot=null;
+let mdCloudReferenceLoadedAt=null;
 
 function mdCloudSetStatus(message,state="idle"){
   const dot=document.getElementById("cloudDevDot"), text=document.getElementById("cloudDevStatusText");
@@ -4518,7 +4520,9 @@ async function mdCloudVerifyDatabase(){
     const shops=await response.json();
     const names=(shops||[]).map(x=>x.name).filter(Boolean);
     mdCloudSetStatus(`Connected securely · ${names.length} shop${names.length===1?"":"s"} visible${names.length?`: ${names.join(" · ")}`:""}`,"ok");
-    mdCloudRender();return true;
+    mdCloudRender();
+    await mdCloudRefCheck({automatic:true});
+    return true;
   }catch(err){
     mdCloudSetStatus(`Signed in, but database verification failed: ${err.message}`,"bad");
     mdCloudRender();return false;
@@ -4528,7 +4532,7 @@ function mdCloudSignOut(){
   const token=mdCloudSession?.access_token;
   mdCloudSaveSession(null);
   mdCloudSetStatus("Signed out. Local app data is unchanged.","idle");
-  mdCloudRefSetStatus("Signed out. Stage 2A reference data was not changed.");
+  mdCloudReferenceSnapshot=null; mdCloudRefSetStatus("Signed out. Cloud reference layer cleared from memory; local data was not changed.");
   if(token)fetch(`${MDPIN_SUPABASE_URL}/auth/v1/logout`,{method:"POST",headers:{apikey:MDPIN_SUPABASE_PUBLISHABLE_KEY,Authorization:`Bearer ${token}`}}).catch(()=>{});
 }
 
@@ -4553,12 +4557,15 @@ async function mdCloudRefFetchAll(){
   ]);
   return {products:await pr.json(),aliases:await ar.json(),settings:await sr.json()};
 }
-async function mdCloudRefCheck(){
+async function mdCloudRefCheck(options={}){
+  const automatic=!!options.automatic;
   mdCloudRefUpdateLocalMetric();
   if(!mdCloudSession?.access_token){mdCloudRefSetStatus("Sign in to DEV Cloud first.","warn");return false;}
-  mdCloudRefSetStatus("Reading Stage 2A reference tables…");
+  mdCloudRefSetStatus(automatic?"Auto-loading read-only cloud reference layer…":"Reading cloud reference layer…");
   try{
     const cloud=await mdCloudRefFetchAll();
+    mdCloudReferenceSnapshot=cloud;
+    mdCloudReferenceLoadedAt=new Date();
     const local=(db.products||[]).map(mdCloudRefCanonicalProduct);
     const localMap=new Map(local.map(p=>[p.id,mdCloudRefStableProduct(p)]));
     let changed=0,missing=0;
@@ -4567,8 +4574,14 @@ async function mdCloudRefCheck(){
     document.getElementById("cloudRefCloudProducts").textContent=String((cloud.products||[]).length);
     document.getElementById("cloudRefAliases").textContent=String((cloud.aliases||[]).length);
     if(!(cloud.products||[]).length){mdCloudRefSetStatus("Reference tables are ready but contain no product snapshot yet. Upload the local reference snapshot when you are ready.","warn");}
-    else if(!changed&&!missing&&(cloud.products||[]).length===local.length){mdCloudRefSetStatus(`Reference snapshot matches this device: ${local.length} products · ${(cloud.aliases||[]).length} aliases. Local operational data remains unchanged.`,"ok");}
-    else{mdCloudRefSetStatus(`Comparison complete: local ${local.length}, cloud ${(cloud.products||[]).length}. ${changed} cloud row(s) differ/extra and ${missing} local row(s) are not yet represented in cloud.`,"warn");}
+    else if(!changed&&!missing&&(cloud.products||[]).length===local.length){
+      const when=mdCloudReferenceLoadedAt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      mdCloudRefSetStatus(`Cloud reference layer loaded ${automatic?"automatically ":""}at ${when}: ${local.length} products · ${(cloud.aliases||[]).length} aliases. It matches this device. Local operational data remains the source of truth.`,"ok");
+    }
+    else{
+      const when=mdCloudReferenceLoadedAt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      mdCloudRefSetStatus(`Cloud reference layer loaded at ${when}: local ${local.length}, cloud ${(cloud.products||[]).length}. ${changed} cloud row(s) differ/extra and ${missing} local row(s) are not yet represented in cloud. Nothing was applied to local data.`,"warn");
+    }
     return true;
   }catch(err){
     document.getElementById("cloudRefCloudProducts").textContent="—";document.getElementById("cloudRefAliases").textContent="—";
@@ -4594,7 +4607,7 @@ async function mdCloudRefUpload(){
   try{
     await mdCloudRefUpsert('/rest/v1/md_reference_products',products,'id');
     if(aliases.length)await mdCloudRefUpsert('/rest/v1/md_reference_aliases',aliases,'alias_key');
-    await mdCloudRefUpsert('/rest/v1/md_reference_settings',[{key:'business_rules',value:rules,updated_at:new Date().toISOString()},{key:'snapshot_meta',value:{app_version:'0.10.12-dev',product_count:products.length,alias_count:aliases.length,uploaded_at:new Date().toISOString()},updated_at:new Date().toISOString()}],'key');
+    await mdCloudRefUpsert('/rest/v1/md_reference_settings',[{key:'business_rules',value:rules,updated_at:new Date().toISOString()},{key:'snapshot_meta',value:{app_version:'0.10.13-dev',product_count:products.length,alias_count:aliases.length,uploaded_at:new Date().toISOString()},updated_at:new Date().toISOString()}],'key');
     mdCloudRefSetStatus(`Upload complete: ${products.length} products and ${aliases.length} aliases copied to DEV Cloud. Verifying read-back…`,"ok");
     await mdCloudRefCheck();
   }catch(err){mdCloudRefSetStatus(`Upload failed: ${err?.message||err}`,"bad");}
@@ -4668,9 +4681,9 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
         const keys=await caches.keys();
         await Promise.all(keys.filter(k=>k.startsWith("magic-dragon-pin-")).map(k=>caches.delete(k)));
       }
-      if(navigator.serviceWorker.controller && !sessionStorage.getItem("mdpin-sw-cleared-0112")){
-        sessionStorage.setItem("mdpin-sw-cleared-0112","1");
-        const u=new URL(location.href);u.searchParams.set("swreset","0112");location.replace(u.toString());
+      if(navigator.serviceWorker.controller && !sessionStorage.getItem("mdpin-sw-cleared-0113")){
+        sessionStorage.setItem("mdpin-sw-cleared-0113","1");
+        const u=new URL(location.href);u.searchParams.set("swreset","0113");location.replace(u.toString());
       }
     }catch(e){console.warn("DEV service-worker cleanup",e);}
   });
