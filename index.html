@@ -3585,7 +3585,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 .cloudRefMetrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.cloudRefMetrics span{padding:8px;border:1px solid #e4e7ec;border-radius:10px;background:white;text-align:center}.cloudRefMetrics b{display:block;font-size:1.05rem}.cloudRefMetrics small{display:block;color:#667085;font-size:.72rem;margin-top:2px}.cloudStage2Actions{margin-top:9px;display:flex;gap:8px;flex-wrap:wrap}.cloudStage2Actions button{flex:1 1 190px}
 
 
-/* v0.10.18 — responsive A–Z delivery scrubber
+/* v0.10.19 — responsive A–Z delivery scrubber
    Visual letters and touch zones now share the same full-width grid. */
 #delivery .deliveryAlphabetScrubber{
   width:100%;
@@ -3625,7 +3625,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 }
 
 
-/* v0.10.18 — delivery picker visibility layout */
+/* v0.10.19 — delivery picker visibility layout */
 #deliveryEntryTools .deliveryPrimaryProduct{
   width:100%;
   margin-bottom:6px;
@@ -3639,7 +3639,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 }
 
 
-/* v0.10.18 — reusable reference sync decision / conflict guard */
+/* v0.10.19 — reusable reference sync decision / conflict guard */
 .cloudSyncDecision{display:grid;gap:6px;margin-top:8px;padding:9px 10px;border:1px solid #dbe1e9;border-radius:10px;background:#f8fafc}
 .cloudSyncDecision b{display:block;font-size:10.5px;color:#172033}
 .cloudSyncDecision small{display:block;margin-top:2px;font-size:8.5px;line-height:1.3;color:#667085}
@@ -3651,6 +3651,47 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 .cloudSyncDecision[data-state="conflict"]{border-color:#e7b2b2;background:#fff5f5}
 .cloudSyncDecision[data-state="first-contact"]{border-color:#d5c7e8;background:#faf7ff}
 .cloudSyncDecision[data-state="cloud-empty"]{border-color:#e1cf9b;background:#fffaf0}
+
+
+/* v0.10.19 — permanent A–Z proportional scrubber
+   26 visual cells share the exact same rendered geometry used by pointer mapping. */
+#delivery .deliveryAlphabetScrubber{
+  width:100%;
+  box-sizing:border-box;
+  touch-action:none;
+}
+#delivery .deliveryAlphabetTrack{
+  width:100%;
+  display:grid!important;
+  grid-template-columns:repeat(26,minmax(0,1fr))!important;
+  gap:0!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+  letter-spacing:0!important;
+  word-spacing:0!important;
+  box-sizing:border-box;
+}
+#delivery .deliveryAlphabetLetter{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  text-align:center!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  pointer-events:none!important;
+}
+#delivery .deliveryAlphabetLetter.selected{
+  font-weight:950!important;
+}
+@media (min-width:700px){
+  #delivery .deliveryAlphabetLetter{font-size:12px!important}
+}
 
 </style>
 </head>
@@ -3666,7 +3707,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.18 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.19 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -3865,7 +3906,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
           <div class="field deliverySearch"><label>Find product</label><input id="deliveryProductSearch" type="search" placeholder="Type Pin's product name…" autocomplete="off"></div>
           <div class="deliveryAlphabetWrap" aria-label="Alphabet product finder">
             <div id="deliveryAlphabetScrubber" class="deliveryAlphabetScrubber" role="slider" aria-label="Find product by first letter" aria-valuemin="1" aria-valuemax="26" aria-valuenow="1" tabindex="0">
-              <div class="deliveryAlphabetLetters deliveryAlphabetTrack" aria-hidden="true">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</div>
+              <div class="deliveryAlphabetLetters deliveryAlphabetTrack" aria-hidden="true"><span class="deliveryAlphabetLetter" data-letter="A">A</span><span class="deliveryAlphabetLetter" data-letter="B">B</span><span class="deliveryAlphabetLetter" data-letter="C">C</span><span class="deliveryAlphabetLetter" data-letter="D">D</span><span class="deliveryAlphabetLetter" data-letter="E">E</span><span class="deliveryAlphabetLetter" data-letter="F">F</span><span class="deliveryAlphabetLetter" data-letter="G">G</span><span class="deliveryAlphabetLetter" data-letter="H">H</span><span class="deliveryAlphabetLetter" data-letter="I">I</span><span class="deliveryAlphabetLetter" data-letter="J">J</span><span class="deliveryAlphabetLetter" data-letter="K">K</span><span class="deliveryAlphabetLetter" data-letter="L">L</span><span class="deliveryAlphabetLetter" data-letter="M">M</span><span class="deliveryAlphabetLetter" data-letter="N">N</span><span class="deliveryAlphabetLetter" data-letter="O">O</span><span class="deliveryAlphabetLetter" data-letter="P">P</span><span class="deliveryAlphabetLetter" data-letter="Q">Q</span><span class="deliveryAlphabetLetter" data-letter="R">R</span><span class="deliveryAlphabetLetter" data-letter="S">S</span><span class="deliveryAlphabetLetter" data-letter="T">T</span><span class="deliveryAlphabetLetter" data-letter="U">U</span><span class="deliveryAlphabetLetter" data-letter="V">V</span><span class="deliveryAlphabetLetter" data-letter="W">W</span><span class="deliveryAlphabetLetter" data-letter="X">X</span><span class="deliveryAlphabetLetter" data-letter="Y">Y</span><span class="deliveryAlphabetLetter" data-letter="Z">Z</span></div>
               <div id="deliveryAlphabetThumb" class="deliveryAlphabetThumb" aria-hidden="true">A</div>
             </div>
           </div>
@@ -5751,7 +5792,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.18-dev",
+    appVersion:"0.10.19-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -7335,10 +7376,24 @@ function calcImport(){
 
 
 const DELIVERY_ALPHA="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+function deliveryAlphabetCells(){
+  const track=document.querySelector("#deliveryAlphabetScrubber .deliveryAlphabetTrack");
+  return track?[...track.querySelectorAll(".deliveryAlphabetLetter")]:[];
+}
+function deliveryAlphabetCellIndexFromClientX(clientX){
+  const track=document.querySelector("#deliveryAlphabetScrubber .deliveryAlphabetTrack");
+  const cells=deliveryAlphabetCells();
+  if(!track||cells.length!==26)return 0;
+  const rect=track.getBoundingClientRect();
+  if(rect.width<=0)return 0;
+  const x=Math.max(0,Math.min(rect.width-0.001,Number(clientX||0)-rect.left));
+  return Math.max(0,Math.min(25,Math.floor((x/rect.width)*cells.length)));
+}
 function clearDeliveryAlphabetVisual(){
   const el=document.getElementById("deliveryAlphabetScrubber");
   const thumb=document.getElementById("deliveryAlphabetThumb");
   if(el)el.classList.remove("active");
+  deliveryAlphabetCells().forEach(cell=>cell.classList.remove("selected"));
   if(thumb)thumb.style.display="none";
 }
 function setDeliveryAlphabetLetter(letter, clientX=null){
@@ -7353,23 +7408,27 @@ function setDeliveryAlphabetLetter(letter, clientX=null){
     el.classList.add("active");
     el.setAttribute("aria-valuenow",String(pos+1));
     el.setAttribute("aria-valuetext",letter);
+    const cells=deliveryAlphabetCells();
+    cells.forEach((cell,index)=>cell.classList.toggle("selected",index===pos));
     if(thumb){
       thumb.textContent=letter;
       thumb.style.display="grid";
       const track=el.querySelector(".deliveryAlphabetTrack")||el;
-  const rect=track.getBoundingClientRect();
-      const x=clientX==null?((pos+.5)/26)*rect.width:Math.max(0,Math.min(rect.width,clientX-rect.left));
-      thumb.style.left=`${x}px`;
+      const trackRect=track.getBoundingClientRect();
+      const cell=cells[pos];
+      if(cell){
+        const cellRect=cell.getBoundingClientRect();
+        thumb.style.left=`${(cellRect.left-trackRect.left)+(cellRect.width/2)}px`;
+      }else{
+        thumb.style.left=`${((pos+.5)/26)*trackRect.width}px`;
+      }
     }
   }
   fillProducts();
 }
 function deliveryLetterFromPointer(ev){
-  const el=document.getElementById("deliveryAlphabetScrubber");
-  if(!el)return "";
-  const rect=el.getBoundingClientRect();
-  const x=Math.max(0,Math.min(rect.width-0.01,ev.clientX-rect.left));
-  return DELIVERY_ALPHA[Math.floor((x/rect.width)*26)]||"A";
+  const index=deliveryAlphabetCellIndexFromClientX(ev.clientX);
+  return DELIVERY_ALPHA[index]||"A";
 }
 function setupDeliveryAlphabetScrubber(){
   const el=document.getElementById("deliveryAlphabetScrubber");
@@ -8624,7 +8683,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.18-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.19-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -8656,7 +8715,7 @@ document.getElementById("fillMasterCurrent").onclick=()=>renderMasterProductSetu
 document.getElementById("saveMasterProducts").onclick=applyMasterProductSetup;
 document.getElementById("resetData").onclick=()=>{if(confirm("Delete all local Magic Dragon Pin data on this browser?")){localStorage.removeItem("mdpin-db");location.reload()}}
 
-// v0.10.18 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
+// v0.10.19 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
 const MDPIN_SUPABASE_URL="https://bzgkeshxbnhnlrpdgbtb.supabase.co";
 const MDPIN_SUPABASE_PUBLISHABLE_KEY="sb_publishable_8EReyQFUFSe6SPHCBLhU7g_zp8j18_D";
 const MDPIN_SUPABASE_SESSION_KEY="mdpin-supabase-dev-session";
@@ -8954,7 +9013,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.18-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.19-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -9024,7 +9083,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.18-dev',
+        app_version:'0.10.19-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,

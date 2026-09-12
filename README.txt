@@ -1,42 +1,35 @@
-MAGIC DRAGON PIN v0.10.18 DEV — SUPABASE STAGE 2D
+MAGIC DRAGON PIN v0.10.19 DEV — PERMANENT A–Z SCRUBBER FIX
 
-REUSABLE LEGO BLOCK: Reference Sync Decision / Conflict Guard
+Built from v0.10.18 DEV Stage 2D.
 
-This module gives a local-first/cloud-backed app a standard decision layer before reference data moves in either direction.
+ROOT CAUSE
+The alphabet was displayed as one spaced text string while pointer selection used proportional math across the scrubber width.
+On wider displays, rendered text spacing and touch geometry could still diverge.
 
-STATE CLASSIFICATION
-- MATCH
-- LOCAL CHANGED
-- CLOUD CHANGED
-- CONFLICT
-- FIRST CONTACT
-- CLOUD EMPTY
+PERMANENT FIX
+- Replaced the text string with 26 real DOM letter cells.
+- Each cell owns exactly 1/26 of the rendered track width.
+- Pointer/touch index is calculated from the exact same rendered track.
+- The floating thumb snaps to the center of the real selected cell.
+- Selected cell receives a visual emphasis.
+- Font/word spacing can no longer distort the letter geometry.
 
-MECHANISM
-- deterministic local reference fingerprint
-- deterministic cloud reference fingerprint
-- persistent per-device ID
-- local last-common sync anchor
-- cloud snapshot metadata stored in the EXISTING snapshot_meta settings row
-- stronger confirmation for potentially conflicting upload or merge directions
+REUSABLE LEGO CONTRACT
+PROPORTIONAL SCRUBBER =
+  ONE RENDERED TRACK
+  + N EQUAL VISUAL CELLS
+  + POINTER INDEX CALCULATED FROM THAT SAME TRACK
+  + OPTIONAL THUMB POSITIONED FROM THE SELECTED CELL
 
-SNAPSHOT META
-- schema_version
-- snapshot_id
-- app_version
-- product_count
-- alias_count
-- uploaded_at
-- source_device_id
-- reference_fingerprint
+Never use text spacing as touch geometry.
 
-IMPORTANT
-- No new Supabase table
-- No SQL migration
-- Older cloud snapshots remain compatible; cloud fingerprint can be calculated from returned rows
-- Stage 2C preview/apply/undo is preserved
-- No automatic direction is chosen during a conflict
-- Operational data remains local-only
+NO BUSINESS LOGIC CHANGES
+Supabase Stage 2D, reference sync guard, Delivery business logic, Sunday workflow,
+invoices, Backup & Recovery, catalogue behavior and keyboard-safe input logic are unchanged.
 
-REUSABLE CONTRACT
-AUTHENTICATED REFERENCE STORE + DETERMINISTIC FINGERPRINT + LAST-COMMON ANCHOR + CONFLICT CLASSIFICATION + EXPLICIT DIRECTION + UNDO.
+TEST
+1. Open New Delivery on iPad.
+2. Drag slowly from A to Z.
+3. Confirm the selected letter/thumb follows the visible letter under the finger.
+4. Repeat in landscape if convenient.
+5. Repeat on iPhone to confirm no regression.
