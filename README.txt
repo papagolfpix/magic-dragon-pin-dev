@@ -1,9 +1,9 @@
-MAGIC DRAGON PIN v0.10.10 DEV — SUPABASE STAGE 1 HOTFIX
+MAGIC DRAGON PIN v0.10.11 DEV — SUPABASE STAGE 1 URL FIX
 
 Purpose:
 Development/staging build only. Production remains separate.
 
-What changed in v0.10.10 DEV:
+What changed in v0.10.11 DEV:
 - Added the Magic Dragon Pin DEV Supabase project URL and publishable browser key.
 - Added Settings > DEV Cloud Connection.
 - Existing DEV users can sign in with email/password.
@@ -21,9 +21,12 @@ Security:
 - Protected table access still requires an authenticated Supabase user and RLS policies.
 
 Visible marker:
-v0.10.10 DEV
+v0.10.11 DEV
 
-Hotfix v0.10.10: Service worker now bypasses all cross-origin API traffic so Supabase authentication is handled directly by Safari instead of the offline asset cache.
+Hotfix v0.10.11: Service worker now bypasses all cross-origin API traffic so Supabase authentication is handled directly by Safari instead of the offline asset cache.
 
 
-v0.10.10 DEV diagnostic: service worker intentionally disabled/unregistered to eliminate stale Safari worker interference while validating Supabase authentication.
+v0.10.11 DEV diagnostic: service worker intentionally disabled/unregistered to eliminate stale Safari worker interference while validating Supabase authentication.
+
+
+Fix v0.10.11: corrected Supabase DEV hostname from bzqkeshxbnhnlrpdgbtb.supabase.co to bzgkeshxbnhnlrpdgbtb.supabase.co. The prior one-character hostname typo caused Safari fetch() to fail before authentication with “Load failed”.

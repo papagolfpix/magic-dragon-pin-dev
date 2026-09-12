@@ -3593,7 +3593,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.10 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.11 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -8600,8 +8600,8 @@ document.getElementById("fillMasterCurrent").onclick=()=>renderMasterProductSetu
 document.getElementById("saveMasterProducts").onclick=applyMasterProductSetup;
 document.getElementById("resetData").onclick=()=>{if(confirm("Delete all local Magic Dragon Pin data on this browser?")){localStorage.removeItem("mdpin-db");location.reload()}}
 
-// v0.10.10 DEV — Supabase Stage 1 connection. Service-worker cross-origin API fix; no business records sync in this build.
-const MDPIN_SUPABASE_URL="https://bzqkeshxbnhnlrpdgbtb.supabase.co";
+// v0.10.11 DEV — Supabase Stage 1 connection. Corrected DEV project URL; no business records sync in this build.
+const MDPIN_SUPABASE_URL="https://bzgkeshxbnhnlrpdgbtb.supabase.co";
 const MDPIN_SUPABASE_PUBLISHABLE_KEY="sb_publishable_8EReyQFUFSe6SPHCBLhU7g_zp8j18_D";
 const MDPIN_SUPABASE_SESSION_KEY="mdpin-supabase-dev-session";
 let mdCloudSession=null;
@@ -8753,7 +8753,7 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   })();
 
   window.addEventListener("load",async()=>{
-    // v0.10.10 DEV cloud diagnostic: remove any previously installed worker.
+    // v0.10.11 DEV cloud diagnostic: remove any previously installed worker.
     // Safari can keep an older worker controlling this GitHub Pages scope even after a deploy.
     try{
       const regs=await navigator.serviceWorker.getRegistrations();
@@ -8762,9 +8762,9 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
         const keys=await caches.keys();
         await Promise.all(keys.filter(k=>k.startsWith("magic-dragon-pin-")).map(k=>caches.delete(k)));
       }
-      if(navigator.serviceWorker.controller && !sessionStorage.getItem("mdpin-sw-cleared-0110")){
-        sessionStorage.setItem("mdpin-sw-cleared-0110","1");
-        const u=new URL(location.href);u.searchParams.set("swreset","0110");location.replace(u.toString());
+      if(navigator.serviceWorker.controller && !sessionStorage.getItem("mdpin-sw-cleared-0111")){
+        sessionStorage.setItem("mdpin-sw-cleared-0111","1");
+        const u=new URL(location.href);u.searchParams.set("swreset","0111");location.replace(u.toString());
       }
     }catch(e){console.warn("DEV service-worker cleanup",e);}
   });
