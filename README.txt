@@ -1,28 +1,41 @@
-MAGIC DRAGON PIN v0.10.33 DEV — SUNDAY IMPORT SESSION RESET
+MAGIC DRAGON PIN v0.10.34 DEV — SUNDAY CORRECTION CARRY-FORWARD
 
-Built from v0.10.32 after the user validated multi-week detection and duplicate/conflict classification.
+Built directly from the user-tested v0.10.33 DEV baseline.
 
-FIX
-- Clear Selection now fully clears the transient Sunday import session: selected File objects, detected weekly blocks, checkboxes/preflight list, file input value, result messages and import-button count.
-- Close Import now also abandons/resets that transient import session. Reopening + Import Reports starts clean instead of resurrecting the previous workbook.
-- If the native file picker returns with no files selected, the same reset path is used so stale preflight data cannot remain.
-- One reusable resetSundayImportSession() helper owns this behavior for both controls.
+FOCUSED CHANGE ONLY
+This release fixes the accounting treatment and explanation when an already-imported Sunday report is replaced with different figures after an invoice has been issued/paid.
 
-PRESERVED
-- v0.10.32 multi-week preflight (Week block 1/N etc.)
-- NEW / ALREADY IMPORTED / CONFLICT classification
-- identical duplicate protection
-- explicit conflict replacement
-- safe Sunday deletion
-- existing archive/history records are never touched by Clear Selection or Close Import
-- Parent/Variant, Delivery, Backup/Recovery and Stage 2D behavior unchanged
+NEW BEHAVIOUR
+- Before replacement, the app calculates the exact financial delta between old and new Sunday data.
+- Delta uses the master product cost/retail and the correct standard/edible profit split.
+- The replacement confirmation shows:
+  Sales delta
+  Cost delta
+  Pin profit-share delta
+  Total delta payable to Pin
+- A source-correction audit record is stored.
+- If an affected invoice is already paid, that historic paid invoice remains unchanged.
+- The amount still payable to Pin is queued automatically as a prior-period adjustment for the next eligible Sunday invoice.
+- The invoice screen shows a clear breakdown instead of misleading "Verified difference +฿0".
+- Dashboard shows the queued correction with its actual money breakdown.
+- DEV Self-Test verifies the Sunday correction carry-forward helper path exists.
 
-TEST
-1. Choose the 3-week workbook and confirm all 3 blocks appear.
-2. Tap Clear Selection. The filename card, 3 blocks, checkboxes and result state should disappear/reset immediately.
-3. Tap Close Import, then + Import Reports. It should reopen blank with no previous workbook state.
-4. Choose the workbook again; detection should run fresh.
-5. Settings -> DEV Self-Test: Sunday import transient-state reset should PASS.
+EXAMPLE
+One extra standard item sold at ฿150 with ฿60 cost:
+Sales +฿150
+Cost +฿60
+Profit +฿90
+Pin profit share +฿27
+Still payable to Pin +฿87
 
-LEGO BLOCK
-Transient Import Session Reset = one idempotent helper resets File input + in-memory selected files + parsed/detected blocks + preflight UI + action count + transient result UI, while preserving persisted archive/database records.
+TEST PATH
+1. Start with an already-imported Sunday week.
+2. Upload a changed copy where one standard ฿150 / ฿60 product changes from 0 sold to 1 sold.
+3. Confirm the replacement warning shows Sales +฿150, Cost +฿60, Pin profit +฿27, Pay Pin +฿87.
+4. Accept replacement.
+5. Open the affected paid invoice.
+6. Confirm it says PAID · CORRECTION QUEUED and clearly shows +฿87 queued for next Sunday.
+7. Open the next eligible Sunday workflow and confirm +฿87 appears as an automatic previous-week correction.
+
+NO OTHER MAJOR WORKFLOW CHANGES
+Mapping-review cleanup remains the next roadmap block after this test passes.
