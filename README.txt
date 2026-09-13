@@ -1,4 +1,4 @@
-MAGIC DRAGON PIN v0.10.29 DEV — EDITABLE DELIVERY LINES + KEYBOARD LEGO BLOCK
+MAGIC DRAGON PIN v0.10.30 DEV — THREE-ACTION FOOTER + KEYBOARD FOCUS HARDENING
 
 - Clear is fixed bottom-left; Save/Commit is fixed bottom-right on Create and Edit Delivery.
 - Create Delivery and Edit/Suggested Delivery now use the same editable line-item component.
@@ -89,7 +89,7 @@ v0.10.29 DEV — IPHONE DELIVERY FOOTER HARDENING
 - Both buttons remain 50/50 on one row, with safe-area offsets for iPhone.
 - The portal is restored to its original DOM location when leaving Create Delivery so archive/other screens are unaffected.
 - Added extra bottom content clearance so the fixed row cannot cover the final product/total.
-- Service-worker cache bumped to v0.10.29-dev.
+- Service-worker cache bumped to v0.10.30-dev.
 
 
 v0.10.29 DEV — Delivery create/edit consistency
@@ -97,3 +97,13 @@ v0.10.29 DEV — Delivery create/edit consistency
 - Cancel edit is no longer part of the fixed footer; it remains an inline secondary action so the fixed footer is always exactly two equal buttons.
 - Edit Delivery line items now use the same Product / Qty / Cost / Sale / remove column language as Create Delivery. Product and quantity remain directly editable.
 - This becomes the reusable Delivery Row + Fixed Action Footer Lego-block pattern for future Magic Dragon/Papa Golf mobile screens.
+
+
+v0.10.30 DEV — DELIVERY ACTION + KEYBOARD REGRESSION HARDENING
+- Unified Create/Edit footer is now Cancel | Clear | Save, with Save always on the right.
+- Cancel is available on new dockets as well as edited/suggested dockets.
+- Cancel on an unsaved new docket confirms before discarding entered lines.
+- Removed the separate inline Cancel control that could appear behind the fixed footer.
+- Line-quantity keyboard mode now temporarily collapses the upper delivery-entry tools, giving the editable line list the visible iPhone viewport.
+- Focus logic now searches for the nearest real scroll owner instead of assuming the active section owns scrolling.
+- Footer, keyboard visibility, safe-area spacing, editable-row alignment and action placement are treated as reusable Lego-block regression checks.

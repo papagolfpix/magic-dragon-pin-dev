@@ -4409,6 +4409,91 @@ body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{grid
  body.deliveryMode .deliveryConsistentProduct select{font-size:13px!important}
  body.deliveryMode .deliveryConsistentPrice{font-size:10.5px!important}
 }
+
+
+/* v0.10.30 DEV — Delivery Action Bar + Keyboard Focus Lego block.
+   Authoritative footer: Cancel | Clear | Save, with Save always on the right.
+   The entire bar is portalled to body so no delivery content can paint over it. */
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal{
+  grid-template-columns:minmax(0,.88fr) minmax(0,.88fr) minmax(0,1.24fr)!important;
+  gap:6px!important;
+  background:transparent!important;
+}
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #cancelEditDelivery,
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #clearDelivery,
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{
+  display:block!important;
+  position:static!important;
+  grid-row:1!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:50px!important;
+  min-height:50px!important;
+  margin:0!important;
+  padding:6px 5px!important;
+  border-radius:10px!important;
+  font-size:11.5px!important;
+  font-weight:850!important;
+  line-height:1.05!important;
+  white-space:normal!important;
+  box-sizing:border-box!important;
+}
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #cancelEditDelivery{
+  grid-column:1!important;order:1!important;
+  background:#fff!important;color:#172033!important;border:1px solid #cbd2dc!important;
+}
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #clearDelivery{
+  grid-column:2!important;order:2!important;
+  background:#fff!important;color:#172033!important;border:1px solid #cbd2dc!important;
+}
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{
+  grid-column:3!important;order:3!important;
+  background:#0d1628!important;color:#fff!important;border:1px solid #0d1628!important;
+}
+/* Cancel is part of the action bar on both Create and Edit. */
+body.deliveryMode:not(.deliveryEditMode) .deliveryCancelAction{display:block!important}
+/* Nothing in the normal document flow should sit beneath/behind the fixed bar. */
+body.deliveryMode .deliveryBottomPane{padding-bottom:calc(62px + env(safe-area-inset-bottom))!important}
+body.deliveryMode .deliveryBottomPane .totalbar{margin-bottom:0!important}
+body.deliveryMode #docket{padding-bottom:max(126px,calc(108px + env(safe-area-inset-bottom)))!important}
+
+/* iPhone line-edit mode: once a Qty cell is focused, reclaim the top entry area.
+   This is intentional: keeping the field visible is more important than retaining
+   add-product controls while the numeric keyboard occupies half the screen. */
+body.deliveryMode.deliveryLineEditFocus .deliveryTopPane{display:none!important}
+body.deliveryMode.deliveryLineEditFocus .deliveryBottomPane{display:none!important}
+body.deliveryMode.deliveryLineEditFocus > .deliverySaveActions.deliveryActionPortal{display:none!important}
+body.deliveryMode.deliveryLineEditFocus #deliveryCreatePane>.deliveryWorkspace{
+  grid-template-rows:minmax(0,1fr)!important;
+}
+body.deliveryMode.deliveryLineEditFocus .deliveryMiddlePane{
+  min-height:0!important;
+  height:100%!important;
+  overflow:hidden!important;
+}
+body.deliveryMode.deliveryLineEditFocus #deliveryEditLines{
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  padding-top:0!important;
+  padding-bottom:18px!important;
+  scroll-padding-top:40px!important;
+  scroll-padding-bottom:24px!important;
+}
+body.deliveryMode.deliveryLineEditFocus .deliveryEditTableHeader{top:0!important}
+body.deliveryMode.deliveryLineEditFocus .deliveryConsistentRow.keyboardTarget{
+  outline:2px solid rgba(154,113,20,.42)!important;
+  outline-offset:-2px!important;
+  background:#fffaf0!important;
+}
+@media(max-width:430px){
+  body.deliveryMode > .deliverySaveActions.deliveryActionPortal{left:8px!important;right:8px!important;gap:5px!important}
+  body.deliveryMode > .deliverySaveActions.deliveryActionPortal #cancelEditDelivery,
+  body.deliveryMode > .deliverySaveActions.deliveryActionPortal #clearDelivery,
+  body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{font-size:11px!important;padding:5px 3px!important}
+}
 </style>
 </head>
 <body>
@@ -4423,7 +4508,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.29 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.30 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -4651,10 +4736,10 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <div class="deliveryBottomPane">
         <div class="totalbar"><span>Total cost: <span id="deliveryTotal">฿0</span></span></div>
         <div id="deliveryCorrectionChoice" class="deliveryCorrectionChoice" style="display:none"></div>
-        <button class="btn alt deliveryCancelAction" id="cancelEditDelivery" style="display:none">Cancel edit</button>
         <div class="deliverySaveActions">
-          <button class="btn" id="saveDelivery">Save Delivery + Create Docket</button>
-          <button class="btn alt" id="clearDelivery">Clear</button>
+          <button class="btn alt deliveryCancelAction" id="cancelEditDelivery" type="button">Cancel</button>
+          <button class="btn alt" id="clearDelivery" type="button">Clear</button>
+          <button class="btn" id="saveDelivery" type="button" aria-label="Save delivery docket">Save Docket</button>
         </div>
       </div>
     </div>
@@ -5163,19 +5248,19 @@ function clearKeyboardSafeTimers(){
 function keyboardSafeScrollOwner(el){
   if(!el)return null;
 
-  // Primary Magic Dragon shell: active sections own scrolling.
-  const section=el.closest(".section.active");
-  if(section)return section;
-
-  // Reusable fallback for future modular screens.
+  // Reusable rule: use the nearest ancestor that can actually scroll.
+  // Do not assume .section.active is the owner: Delivery deliberately uses
+  // nested scroll regions and iOS Safari will otherwise move the wrong box.
   let node=el.parentElement;
   while(node && node!==document.body){
     const style=getComputedStyle(node);
     const oy=style.overflowY;
-    if((oy==="auto"||oy==="scroll") && node.scrollHeight>node.clientHeight+2)return node;
+    const canScroll=(oy==="auto"||oy==="scroll"||oy==="hidden") && node.scrollHeight>node.clientHeight+2;
+    if(canScroll)return node;
     node=node.parentElement;
   }
-  return null;
+  const section=el.closest(".section.active");
+  return section||document.scrollingElement||document.documentElement;
 }
 
 function keyboardSafeBounds(owner){
@@ -5508,9 +5593,14 @@ function runDevSelfTests(){
    rows.push(devSelfTestRow("Sunday context filter",contextOk?"pass":"fail",
      contextOk?"Sunday subset + Show all products controls are available.":"Sunday context-filter functions are missing."));
 
-   const keyboardOk=typeof keyboardSafeScrollOwner==="function";
+   const keyboardOk=typeof keyboardSafeScrollOwner==="function" && typeof window.deliveryQtyFocus==="function";
    rows.push(devSelfTestRow("Keyboard-safe form block",keyboardOk?"pass":"fail",
-     keyboardOk?"Shared mobile keyboard helper is present.":"Shared keyboard helper missing."));
+     keyboardOk?"Shared keyboard helper + Delivery Qty focus block are present.":"Shared keyboard/focus helper missing."));
+
+   const actionBar=document.querySelector(".deliverySaveActions");
+   const footerOk=!!actionBar && ["cancelEditDelivery","clearDelivery","saveDelivery"].every(id=>!!actionBar.querySelector(`#${id}`));
+   rows.push(devSelfTestRow("Delivery 3-action footer",footerOk?"pass":"fail",
+     footerOk?"Cancel, Clear and Save share one reusable footer container.":"Delivery action footer is incomplete or split across containers."));
 
    const cloudOk=!!document.getElementById("cloudSyncDecision");
    rows.push(devSelfTestRow("Stage 2D DEV guard",cloudOk?"pass":"warn",
@@ -5762,19 +5852,26 @@ window.deliveryQtyFocus=(input)=>{
   const card=input.closest(".deliveryEditLineCard");
   if(card)card.classList.add("keyboardTarget");
 
-  // Safari's visualViewport changes after focus. Re-run at a few short intervals
-  // so the card lands correctly even when the keyboard animation is still running.
+  // Enter task-focus mode immediately. The upper add-product controls are useful
+  // before editing, but they must never consume the visible iPhone area once a
+  // line quantity is being edited. Hiding them preserves focus and gives the
+  // line list the full visualViewport above the keyboard.
+  document.body.classList.add("deliveryLineEditFocus");
   updateDeliveryKeyboardViewport();
-  setTimeout(updateDeliveryKeyboardViewport,60);
-  setTimeout(updateDeliveryKeyboardViewport,180);
-  setTimeout(positionActiveDeliveryQty,240);
+  [40,90,160,260,380,520].forEach(delay=>setTimeout(()=>{
+    updateDeliveryKeyboardViewport();
+    positionActiveDeliveryQty();
+  },delay));
 };
 
 window.deliveryQtyBlur=(input)=>{
   setTimeout(()=>{
-    if(document.activeElement!==input)deliveryKeyboardActiveInput=null;
+    if(document.activeElement!==input){
+      deliveryKeyboardActiveInput=null;
+      document.body.classList.remove("deliveryLineEditFocus");
+    }
     updateDeliveryKeyboardViewport();
-  },80);
+  },120);
 };
 
 if(window.visualViewport){
@@ -5873,21 +5970,29 @@ function resetDeliveryEditor(){
  document.getElementById("delQty").value="";
  const variantSelect=document.getElementById("delVariant");
  if(variantSelect){variantSelect.innerHTML='<option value="">Choose variant...</option>';variantSelect.disabled=true;}
- document.getElementById("saveDelivery").textContent="Save Delivery + Create Docket";
- document.getElementById("cancelEditDelivery").style.display="none";
+ document.getElementById("saveDelivery").textContent="Save Docket";
+ document.getElementById("saveDelivery").setAttribute("aria-label","Save delivery docket");
+ document.getElementById("cancelEditDelivery").style.display="block";
+ document.getElementById("cancelEditDelivery").textContent="Cancel";
  document.getElementById("clearDelivery").textContent="Clear";
  const editBanner=document.getElementById("deliveryEditBanner");
  if(editBanner){editBanner.style.display="none";editBanner.innerHTML='<b>Editing docket.</b> Change product or quantity directly, add/remove lines, then save.';}
  const chip=document.getElementById("deliveryEditChip");if(chip){chip.style.display="none";chip.textContent="Editing docket";}
  const nt=document.getElementById("deliveryNoteToggle");if(nt)nt.open=false;
- document.body.classList.remove("deliveryEditMode","deliveryKeyboardOpen");
+ document.body.classList.remove("deliveryEditMode","deliveryKeyboardOpen","deliveryLineEditFocus");
  document.documentElement.style.removeProperty("--md-keyboard-height");
  deliveryKeyboardActiveInput=null;
  setDeliveryEditAddTools(true);
  const title=document.getElementById("deliveryEditorTitle");if(title)title.childNodes[0].nodeValue="Create delivery ";
  renderDelivery();
 }
-document.getElementById("cancelEditDelivery").onclick=()=>{resetDeliveryEditor();openDeliveryArchive()};
+document.getElementById("cancelEditDelivery").onclick=()=>{
+ const isEdit=!!(editingDocketId||editingSuggestionId);
+ const hasDraft=!!currentDelivery.length||!!String(document.getElementById("delNote")?.value||"").trim();
+ if(!isEdit&&hasDraft&&!confirm("Cancel this new delivery? Unsaved lines will be discarded."))return;
+ resetDeliveryEditor();
+ openDeliveryArchive();
+};
 function refreshReconciliationViews(){
   try{
     const recs=refreshStoredReconciliations();
@@ -6139,8 +6244,10 @@ window.editDocket=id=>{
  fillProducts();
  document.getElementById("delDate").value=d.date||today();
  document.getElementById("delNote").value=d.note||"";
- document.getElementById("saveDelivery").textContent="Save Docket Changes";
- document.getElementById("cancelEditDelivery").style.display="inline-block";
+ document.getElementById("saveDelivery").textContent="Save Changes";
+ document.getElementById("saveDelivery").setAttribute("aria-label","Save docket changes");
+ document.getElementById("cancelEditDelivery").style.display="block";
+ document.getElementById("cancelEditDelivery").textContent="Cancel";
  document.getElementById("clearDelivery").textContent="Clear Lines";
  const editBanner=document.getElementById("deliveryEditBanner");if(editBanner){
    editBanner.style.display="block";
@@ -6715,7 +6822,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.29-dev",
+    appVersion:"0.10.30-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -8311,7 +8418,7 @@ function calcImport(){
 
 
 const MD_DEV_RELEASE_META={
-  version:"0.10.29-dev",
+  version:"0.10.30-dev",
   checkpoint:"parent-variant-picker",
   proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery"],
   testing:["parent-variant-picker","dev-self-test"],
@@ -9553,7 +9660,7 @@ function openDeliveryCreate(preserveEdit=false){
   window.scrollTo({top:0,left:0,behavior:"auto"});
 }
 function openDeliveryArchive(openId){
-  document.body.classList.remove("deliveryEditMode","deliveryKeyboardOpen");
+  document.body.classList.remove("deliveryEditMode","deliveryKeyboardOpen","deliveryLineEditFocus");
   document.documentElement.style.removeProperty("--md-keyboard-height");
   deliveryKeyboardActiveInput=null;
   setDeliveryView("archive");
@@ -9652,7 +9759,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.29-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.30-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -9982,7 +10089,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.29-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.30-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -10052,7 +10159,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.29-dev',
+        app_version:'0.10.30-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,
