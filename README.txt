@@ -1,4 +1,12 @@
-MAGIC DRAGON PIN v0.10.28 DEV — DELIVERY FOOTER HARDENING
+MAGIC DRAGON PIN v0.10.29 DEV — EDITABLE DELIVERY LINES + KEYBOARD LEGO BLOCK
+
+- Clear is fixed bottom-left; Save/Commit is fixed bottom-right on Create and Edit Delivery.
+- Create Delivery and Edit/Suggested Delivery now use the same editable line-item component.
+- Product and quantity can be corrected in-place after a line has been added.
+- iPhone keyboard handling now combines visualViewport awareness with the shared keyboard-safe scroll-owner routine so the focused quantity remains visible.
+- Delivery footer hides while the keyboard is open and returns when it closes.
+- Reusable UI regression rule: keyboard/focus visibility, safe-area footer, row/header alignment and action placement checked together.
+
 
 Built from v0.10.22 stability checkpoint.
 
@@ -75,16 +83,16 @@ v0.10.26 DEV DELIVERY FOOTER + PRICE VISIBILITY
 - Service-worker cache bumped to v0.10.26-dev.
 
 
-v0.10.28 DEV — IPHONE DELIVERY FOOTER HARDENING
+v0.10.29 DEV — IPHONE DELIVERY FOOTER HARDENING
 - Root cause found: the delivery Save/Clear row was position:fixed inside .contentViewport, which uses CSS contain:layout paint and overflow:hidden. On iOS Safari that makes the fixed row use/clamp to the contained app shell and it can render below the visible browser viewport.
 - Save Delivery + Create Docket and Clear are now portalled directly under <body> while Create Delivery is active, so they are genuinely viewport-fixed and no longer clipped by the delivery scroll container.
 - Both buttons remain 50/50 on one row, with safe-area offsets for iPhone.
 - The portal is restored to its original DOM location when leaving Create Delivery so archive/other screens are unaffected.
 - Added extra bottom content clearance so the fixed row cannot cover the final product/total.
-- Service-worker cache bumped to v0.10.28-dev.
+- Service-worker cache bumped to v0.10.29-dev.
 
 
-v0.10.28 DEV — Delivery create/edit consistency
+v0.10.29 DEV — Delivery create/edit consistency
 - Save is always the left half and Clear the right half of the same fixed viewport footer in both Create Delivery and Edit Delivery.
 - Cancel edit is no longer part of the fixed footer; it remains an inline secondary action so the fixed footer is always exactly two equal buttons.
 - Edit Delivery line items now use the same Product / Qty / Cost / Sale / remove column language as Create Delivery. Product and quantity remain directly editable.

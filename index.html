@@ -4171,7 +4171,7 @@ body.deliveryMode #docket{padding-bottom:max(94px,calc(78px + env(safe-area-inse
 }
 
 
-/* v0.10.28 DEV — iPhone fixed delivery footer hardening.
+/* v0.10.29 DEV — iPhone fixed delivery footer hardening.
    The app's contentViewport intentionally uses contain:layout paint + overflow:hidden.
    A position:fixed descendant inside that containment is clipped to the app scroll shell on iOS Safari.
    The action row is therefore portalled to <body> while Create Delivery is active. */
@@ -4216,18 +4216,18 @@ body.deliveryMode #docket{padding-bottom:max(112px,calc(96px + env(safe-area-ins
 body.deliveryMode .deliveryBottomPane .totalbar{margin-bottom:8px!important}
 
 
-/* v0.10.28 DEV — unified delivery create/edit visual system.
+/* v0.10.29 DEV — unified delivery create/edit visual system.
    One reusable layout block for product rows and one true viewport footer for Save/Clear. */
 body.deliveryMode > .deliverySaveActions.deliveryActionPortal{
   grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
   gap:6px!important;
 }
-body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #clearDelivery{
   grid-column:1!important;
   grid-row:1!important;
   order:1!important;
 }
-body.deliveryMode > .deliverySaveActions.deliveryActionPortal #clearDelivery{
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{
   grid-column:2!important;
   grid-row:1!important;
   order:2!important;
@@ -4359,6 +4359,56 @@ body.deliveryEditMode .deliveryConsistentRow.keyboardTarget{
   body.deliveryMode > .deliverySaveActions.deliveryActionPortal{left:10px!important;right:10px!important;gap:6px!important}
 }
 
+
+/* v0.10.29 DEV — reusable Delivery Line + iPhone Keyboard Lego block.
+   Create and Edit share one component, and Clear is left / Save is right. */
+body.deliveryMode #deliveryEditLines{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:0!important;
+  padding:0!important;
+  border:1px solid #d8dee8!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+body.deliveryMode .deliveryEditTableHeader,
+body.deliveryMode .deliveryConsistentRow{
+  display:grid!important;
+  grid-template-columns:minmax(0,46fr) minmax(52px,10fr) minmax(56px,15fr) minmax(56px,17fr) 42px!important;
+  align-items:center!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+body.deliveryMode .deliveryEditTableHeader{
+  position:sticky!important;top:0!important;z-index:3!important;
+  min-height:32px!important;padding:0 6px!important;background:#f7f8fa!important;
+  border-bottom:1px solid #d8dee8!important;color:#475467!important;font-size:9.5px!important;font-weight:800!important;
+}
+body.deliveryMode .deliveryEditTableHeader span:not(:first-child){text-align:center!important}
+body.deliveryMode .deliveryConsistentRow{min-height:52px!important;padding:5px 6px!important;border-bottom:1px solid #e4e7ec!important;background:#fff!important}
+body.deliveryMode .deliveryConsistentRow:last-child{border-bottom:0!important}
+body.deliveryMode .deliveryConsistentProduct{min-width:0!important;padding-right:5px!important}
+body.deliveryMode .deliveryConsistentProduct select{width:100%!important;min-width:0!important;height:36px!important;min-height:36px!important;padding:3px 22px 3px 7px!important;border-radius:8px!important;font-size:15px!important;font-weight:750!important}
+body.deliveryMode .deliveryConsistentQty{padding:0 4px!important}
+body.deliveryMode .deliveryConsistentQty input{width:100%!important;min-width:0!important;height:36px!important;min-height:36px!important;padding:3px!important;border-radius:8px!important;font-size:16px!important;text-align:center!important}
+body.deliveryMode .deliveryConsistentPrice{text-align:center!important;font-size:11px!important;font-weight:800!important;white-space:nowrap!important}
+body.deliveryMode .deliveryConsistentRow .deliveryEditRemoveBtn{width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;border-radius:8px!important;margin-left:auto!important}
+body.deliveryMode .deliveryConsistentRow.keyboardTarget{outline:2px solid rgba(154,113,20,.28)!important;outline-offset:-2px!important;background:#fffdf7!important}
+body.deliveryMode.deliveryKeyboardOpen > .deliverySaveActions.deliveryActionPortal{display:none!important}
+body.deliveryMode.deliveryKeyboardOpen .contentViewport{bottom:var(--md-keyboard-height,0px)!important}
+body.deliveryMode.deliveryKeyboardOpen .deliveryBottomPane{display:none!important}
+body.deliveryMode.deliveryKeyboardOpen #deliveryCreatePane>.deliveryWorkspace{grid-template-rows:auto minmax(0,1fr)!important}
+body.deliveryMode.deliveryKeyboardOpen #deliveryEditLines{padding-bottom:12px!important;max-height:none!important}
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #clearDelivery{grid-column:1!important;grid-row:1!important;order:1!important}
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{grid-column:2!important;grid-row:1!important;order:2!important}
+@media(max-width:560px){
+ body.deliveryMode .deliveryEditTableHeader,
+ body.deliveryMode .deliveryConsistentRow{grid-template-columns:minmax(0,47fr) minmax(48px,11fr) minmax(52px,14fr) minmax(52px,16fr) 38px!important}
+ body.deliveryMode .deliveryConsistentProduct select{font-size:13px!important}
+ body.deliveryMode .deliveryConsistentPrice{font-size:10.5px!important}
+}
 </style>
 </head>
 <body>
@@ -4373,7 +4423,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.28 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.29 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -5143,9 +5193,6 @@ function keyboardSafeBounds(owner){
 function ensureFieldVisibleAboveKeyboard(el,forceCenter=false){
   if(!el || !document.body.contains(el))return;
 
-  // Delivery editor owns its own specialised quantity keyboard positioning.
-  if(document.body.classList.contains("deliveryEditMode") && el.closest("#deliveryEditLines"))return;
-
   const owner=keyboardSafeScrollOwner(el);
   if(!owner)return;
 
@@ -5652,10 +5699,14 @@ function deliveryKeyboardMetrics(){
 function positionActiveDeliveryQty(){
   const input=deliveryKeyboardActiveInput;
   const list=document.getElementById("deliveryEditLines");
-  if(!input||!list||!document.body.classList.contains("deliveryEditMode"))return;
+  if(!input||!list||!document.body.classList.contains("deliveryMode"))return;
 
   const card=input.closest(".deliveryEditLineCard");
   if(!card)return;
+
+  // First move the real app scroll owner so the focused field itself is inside
+  // Safari's visual viewport. Then fine-tune the internal product list.
+  ensureFieldVisibleAboveKeyboard(input,true);
 
   document.querySelectorAll(".deliveryEditLineCard.keyboardTarget").forEach(el=>{
     if(el!==card)el.classList.remove("keyboardTarget");
@@ -5687,7 +5738,7 @@ function positionActiveDeliveryQty(){
 function updateDeliveryKeyboardViewport(){
   cancelAnimationFrame(deliveryKeyboardRaf);
   deliveryKeyboardRaf=requestAnimationFrame(()=>{
-    if(!document.body.classList.contains("deliveryEditMode")){
+    if(!document.body.classList.contains("deliveryMode")){
       document.body.classList.remove("deliveryKeyboardOpen");
       document.documentElement.style.removeProperty("--md-keyboard-height");
       return;
@@ -5742,43 +5793,31 @@ function renderDelivery(){
  const editBox=document.getElementById("deliveryEditLines");
  const tableWrap=document.getElementById("deliveryCreateLinesTable");
  const products=canonicalDeliveryProducts().sort((a,b)=>a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true}));
- const editing=!!(editingDocketId||editingSuggestionId);
 
- if(editBox)editBox.style.display=editing?"grid":"none";
- if(tableWrap)tableWrap.style.display=editing?"none":"block";
-
- if(editing){
-   if(tb)tb.innerHTML="";
-   if(editBox){
-     const editHeader=`<div class="deliveryEditTableHeader"><span>Product</span><span>Qty</span><span>Cost</span><span>Sale</span><span aria-hidden="true"></span></div>`;
-     editBox.innerHTML=editHeader+currentDelivery.map((l,i)=>{
-       const p=resolvedProductById(l.productId);
-       if(!p)return `<div class="deliveryEditLineCard">Unknown product record</div>`;
-       const prices=validatedProductPrices(p)||{cost:0,retail:0};
-       const productOptions=products.map(x=>`<option value="${x.id}" ${x.id===l.productId?'selected':''}>${escapeHtml(x.name)}</option>`).join('');
-       return `<div class="deliveryEditLineCard deliveryConsistentRow" data-line-index="${i}">
-         <div class="deliveryEditLineProduct deliveryConsistentProduct">
-           <select aria-label="Product" onchange="editDeliveryLineProduct(${i},this.value)">${productOptions}</select>
-         </div>
-         <div class="deliveryEditQtyBox deliveryConsistentQty">
-           <input aria-label="Quantity" type="number" min="1" inputmode="numeric" value="${Number(l.qty||0)}" onfocus="deliveryQtyFocus(this)" onclick="this.select()" onblur="deliveryQtyBlur(this)" onchange="editDeliveryLineQty(${i},this.value)">
-         </div>
-         <div class="deliveryConsistentPrice" aria-label="Cost">${baht(prices.cost)}</div>
-         <div class="deliveryConsistentPrice" aria-label="Sale">${baht(prices.retail)}</div>
-         <button class="deliveryEditRemoveBtn" type="button" aria-label="Remove ${escapeHtmlAttr(p.name)}" onclick="removeDel(${i})">×</button>
-       </div>`;
-     }).join("");
-   }
- }else{
-   if(editBox)editBox.innerHTML="";
-   if(tb){
-     tb.innerHTML=currentDelivery.map((l,i)=>({l,i})).reverse().map(({l,i})=>{
-       const p=resolvedProductById(l.productId);
-       if(!p)return `<tr><td colspan="5">Unknown product record</td></tr>`;
-       const prices=validatedProductPrices(p)||{cost:0,retail:0};
-       return `<tr><td data-label="Product">${escapeHtml(p.name)}</td><td data-label="Qty">${Number(l.qty||0)}</td><td data-label="Cost">${baht(prices.cost)}</td><td data-label="Sale">${baht(prices.retail)}</td><td data-label=""><button class="btn alt" aria-label="Remove ${escapeHtmlAttr(p.name)}" onclick="removeDel(${i})">×</button></td></tr>`;
-     }).join("");
-   }
+ // v0.10.29: Create and Edit now use exactly the same editable line-item Lego block.
+ // This prevents UI drift and means a newly added line can be corrected in-place.
+ if(tableWrap)tableWrap.style.display="none";
+ if(tb)tb.innerHTML="";
+ if(editBox){
+   editBox.style.display="grid";
+   const editHeader=`<div class="deliveryEditTableHeader"><span>Product</span><span>Qty</span><span>Cost</span><span>Sale</span><span aria-hidden="true"></span></div>`;
+   editBox.innerHTML=editHeader+currentDelivery.map((l,i)=>{
+     const p=resolvedProductById(l.productId);
+     if(!p)return `<div class="deliveryEditLineCard">Unknown product record</div>`;
+     const prices=validatedProductPrices(p)||{cost:0,retail:0};
+     const productOptions=products.map(x=>`<option value="${x.id}" ${x.id===l.productId?'selected':''}>${escapeHtml(x.name)}</option>`).join('');
+     return `<div class="deliveryEditLineCard deliveryConsistentRow" data-line-index="${i}">
+       <div class="deliveryEditLineProduct deliveryConsistentProduct">
+         <select aria-label="Product" onchange="editDeliveryLineProduct(${i},this.value)">${productOptions}</select>
+       </div>
+       <div class="deliveryEditQtyBox deliveryConsistentQty">
+         <input class="keyboardSafeInput deliveryLineQtyInput" aria-label="Quantity" type="number" min="1" inputmode="numeric" enterkeyhint="done" value="${Number(l.qty||0)}" onfocus="deliveryQtyFocus(this)" onclick="this.select()" onblur="deliveryQtyBlur(this)" onchange="editDeliveryLineQty(${i},this.value)">
+       </div>
+       <div class="deliveryConsistentPrice" aria-label="Cost">${baht(prices.cost)}</div>
+       <div class="deliveryConsistentPrice" aria-label="Sale">${baht(prices.retail)}</div>
+       <button class="deliveryEditRemoveBtn" type="button" aria-label="Remove ${escapeHtmlAttr(p.name)}" onclick="removeDel(${i})">×</button>
+     </div>`;
+   }).join("");
  }
  const t=currentDelivery.reduce((sum,l)=>{const p=resolvedProductById(l.productId),prices=validatedProductPrices(p);return sum+(prices?Number(l.qty||0)*prices.cost:0)},0);
  document.getElementById("deliveryTotal").textContent=baht(t);
@@ -5800,8 +5839,8 @@ function rerenderDeliveryStable(){
    if(section)section.scrollTop=sectionTop;
  });
 }
-window.editDeliveryLineProduct=(i,pid)=>{if(!editingDocketId&&!editingSuggestionId)return;const p=resolvedProductById(pid),prices=validatedProductPrices(p);if(!p||!prices)return alert("Choose a valid priced product.");currentDelivery[i].productId=pid;rerenderDeliveryStable();};
-window.editDeliveryLineQty=(i,val)=>{if(!editingDocketId&&!editingSuggestionId)return;const q=Number(val||0);if(q<=0){alert("Quantity must be greater than zero.");rerenderDeliveryStable();return;}currentDelivery[i].qty=q;rerenderDeliveryStable();};
+window.editDeliveryLineProduct=(i,pid)=>{const p=resolvedProductById(pid),prices=validatedProductPrices(p);if(!p||!prices)return alert("Choose a valid priced product.");currentDelivery[i].productId=pid;rerenderDeliveryStable();};
+window.editDeliveryLineQty=(i,val)=>{const q=Number(val||0);if(q<=0){alert("Quantity must be greater than zero.");rerenderDeliveryStable();return;}currentDelivery[i].qty=q;rerenderDeliveryStable();};
 window.removeDel=i=>{currentDelivery.splice(i,1);rerenderDeliveryStable()}
 document.getElementById("delBranch").onchange=()=>{fillProducts();updateDocketEditResolutionUI();};
 document.getElementById("delProduct").onchange=()=>fillDeliveryVariants();
@@ -6676,7 +6715,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.28-dev",
+    appVersion:"0.10.29-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -8272,7 +8311,7 @@ function calcImport(){
 
 
 const MD_DEV_RELEASE_META={
-  version:"0.10.28-dev",
+  version:"0.10.29-dev",
   checkpoint:"parent-variant-picker",
   proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery"],
   testing:["parent-variant-picker","dev-self-test"],
@@ -9613,7 +9652,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.28-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.29-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -9943,7 +9982,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.28-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.29-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -10013,7 +10052,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.28-dev',
+        app_version:'0.10.29-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,
