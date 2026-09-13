@@ -4171,7 +4171,7 @@ body.deliveryMode #docket{padding-bottom:max(94px,calc(78px + env(safe-area-inse
 }
 
 
-/* v0.10.27 DEV — iPhone fixed delivery footer hardening.
+/* v0.10.28 DEV — iPhone fixed delivery footer hardening.
    The app's contentViewport intentionally uses contain:layout paint + overflow:hidden.
    A position:fixed descendant inside that containment is clipped to the app scroll shell on iOS Safari.
    The action row is therefore portalled to <body> while Create Delivery is active. */
@@ -4215,6 +4215,150 @@ body:not(.deliveryMode) > .deliverySaveActions.deliveryActionPortal{display:none
 body.deliveryMode #docket{padding-bottom:max(112px,calc(96px + env(safe-area-inset-bottom)))!important}
 body.deliveryMode .deliveryBottomPane .totalbar{margin-bottom:8px!important}
 
+
+/* v0.10.28 DEV — unified delivery create/edit visual system.
+   One reusable layout block for product rows and one true viewport footer for Save/Clear. */
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:6px!important;
+}
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{
+  grid-column:1!important;
+  grid-row:1!important;
+  order:1!important;
+}
+body.deliveryMode > .deliverySaveActions.deliveryActionPortal #clearDelivery{
+  grid-column:2!important;
+  grid-row:1!important;
+  order:2!important;
+}
+body.deliveryMode .deliveryCancelAction{
+  width:100%!important;
+  min-height:38px!important;
+  margin:5px 0 2px!important;
+  padding:6px 9px!important;
+  font-size:11.5px!important;
+  border-radius:9px!important;
+}
+body.deliveryMode:not(.deliveryEditMode) .deliveryCancelAction{display:none!important}
+body.deliveryEditMode.deliveryKeyboardOpen > .deliverySaveActions.deliveryActionPortal{display:none!important}
+
+/* Edit rows deliberately mirror Create Delivery columns: Product | Qty | Cost | Sale | remove. */
+body.deliveryEditMode #deliveryEditLines{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:0!important;
+  padding:0!important;
+  border:1px solid #d8dee8!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  overflow-y:auto!important;
+}
+body.deliveryEditMode .deliveryEditTableHeader,
+body.deliveryEditMode .deliveryConsistentRow{
+  display:grid!important;
+  grid-template-columns:minmax(0,46fr) minmax(52px,10fr) minmax(56px,15fr) minmax(56px,17fr) 42px!important;
+  align-items:center!important;
+  column-gap:0!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+body.deliveryEditMode .deliveryEditTableHeader{
+  position:sticky!important;
+  top:0!important;
+  z-index:3!important;
+  min-height:32px!important;
+  padding:0 6px!important;
+  background:#f7f8fa!important;
+  border-bottom:1px solid #d8dee8!important;
+  color:#475467!important;
+  font-size:9.5px!important;
+  font-weight:900!important;
+}
+body.deliveryEditMode .deliveryEditTableHeader span:not(:first-child){text-align:center!important}
+body.deliveryEditMode .deliveryConsistentRow{
+  min-height:48px!important;
+  padding:5px 6px!important;
+  border:0!important;
+  border-bottom:1px solid #e5e7eb!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  margin:0!important;
+}
+body.deliveryEditMode .deliveryConsistentRow:last-child{border-bottom:0!important}
+body.deliveryEditMode .deliveryConsistentProduct{
+  display:block!important;
+  min-width:0!important;
+  padding-right:4px!important;
+}
+body.deliveryEditMode .deliveryConsistentProduct select{
+  width:100%!important;
+  min-width:0!important;
+  height:36px!important;
+  min-height:36px!important;
+  padding:4px 22px 4px 6px!important;
+  border:1px solid #cfd6e1!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  color:#172033!important;
+  font-size:16px!important;
+  font-weight:750!important;
+  line-height:1!important;
+}
+body.deliveryEditMode .deliveryConsistentQty{
+  display:block!important;
+  padding:0 3px!important;
+}
+body.deliveryEditMode .deliveryConsistentQty input{
+  width:100%!important;
+  min-width:0!important;
+  height:36px!important;
+  min-height:36px!important;
+  padding:3px!important;
+  border:1px solid #cfd6e1!important;
+  border-radius:8px!important;
+  text-align:center!important;
+  font-size:16px!important;
+  box-sizing:border-box!important;
+}
+body.deliveryEditMode .deliveryConsistentPrice{
+  text-align:center!important;
+  white-space:nowrap!important;
+  font-size:11px!important;
+  font-weight:750!important;
+  color:#172033!important;
+}
+body.deliveryEditMode .deliveryConsistentRow .deliveryEditRemoveBtn{
+  justify-self:end!important;
+  width:34px!important;
+  min-width:34px!important;
+  height:34px!important;
+  min-height:34px!important;
+  margin:0!important;
+  padding:0!important;
+  border:1px solid #d7dce5!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#172033!important;
+  font-size:18px!important;
+  font-weight:900!important;
+}
+body.deliveryEditMode .deliveryConsistentRow.keyboardTarget{
+  background:#fffdf7!important;
+  box-shadow:inset 3px 0 0 #9a7114!important;
+}
+@media(max-width:430px){
+  body.deliveryEditMode .deliveryEditTableHeader,
+  body.deliveryEditMode .deliveryConsistentRow{
+    grid-template-columns:minmax(0,46fr) 48px 54px 54px 38px!important;
+    padding-left:5px!important;
+    padding-right:5px!important;
+  }
+  body.deliveryEditMode .deliveryConsistentPrice{font-size:10.5px!important}
+  body.deliveryEditMode .deliveryConsistentRow .deliveryEditRemoveBtn{width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important}
+  body.deliveryMode > .deliverySaveActions.deliveryActionPortal{left:10px!important;right:10px!important;gap:6px!important}
+}
+
 </style>
 </head>
 <body>
@@ -4229,7 +4373,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.27 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.28 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -4457,10 +4601,10 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <div class="deliveryBottomPane">
         <div class="totalbar"><span>Total cost: <span id="deliveryTotal">฿0</span></span></div>
         <div id="deliveryCorrectionChoice" class="deliveryCorrectionChoice" style="display:none"></div>
+        <button class="btn alt deliveryCancelAction" id="cancelEditDelivery" style="display:none">Cancel edit</button>
         <div class="deliverySaveActions">
           <button class="btn" id="saveDelivery">Save Delivery + Create Docket</button>
           <button class="btn alt" id="clearDelivery">Clear</button>
-          <button class="btn alt" id="cancelEditDelivery" style="display:none">Cancel</button>
         </div>
       </div>
     </div>
@@ -5606,27 +5750,22 @@ function renderDelivery(){
  if(editing){
    if(tb)tb.innerHTML="";
    if(editBox){
-     editBox.innerHTML=currentDelivery.map((l,i)=>{
+     const editHeader=`<div class="deliveryEditTableHeader"><span>Product</span><span>Qty</span><span>Cost</span><span>Sale</span><span aria-hidden="true"></span></div>`;
+     editBox.innerHTML=editHeader+currentDelivery.map((l,i)=>{
        const p=resolvedProductById(l.productId);
        if(!p)return `<div class="deliveryEditLineCard">Unknown product record</div>`;
        const prices=validatedProductPrices(p)||{cost:0,retail:0};
        const productOptions=products.map(x=>`<option value="${x.id}" ${x.id===l.productId?'selected':''}>${escapeHtml(x.name)}</option>`).join('');
-       return `<div class="deliveryEditLineCard" data-line-index="${i}">
-         <div class="deliveryEditLineProduct">
-           <label>Product</label>
-           <select onchange="editDeliveryLineProduct(${i},this.value)">${productOptions}</select>
+       return `<div class="deliveryEditLineCard deliveryConsistentRow" data-line-index="${i}">
+         <div class="deliveryEditLineProduct deliveryConsistentProduct">
+           <select aria-label="Product" onchange="editDeliveryLineProduct(${i},this.value)">${productOptions}</select>
          </div>
-         <div class="deliveryEditLineBottom">
-           <div class="deliveryEditLineMeta">
-             Cost <b>${baht(prices.cost)}</b> · Retail <b>${baht(prices.retail)}</b><br>
-             Cost total <b>${baht(Number(l.qty||0)*prices.cost)}</b>
-           </div>
-           <div class="deliveryEditQtyBox">
-             <label>Qty</label>
-             <input type="number" min="1" inputmode="numeric" value="${Number(l.qty||0)}" onfocus="deliveryQtyFocus(this)" onclick="this.select()" onblur="deliveryQtyBlur(this)" onchange="editDeliveryLineQty(${i},this.value)">
-           </div>
-           <button class="deliveryEditRemoveBtn" type="button" aria-label="Remove ${escapeHtmlAttr(p.name)}" onclick="removeDel(${i})">×</button>
+         <div class="deliveryEditQtyBox deliveryConsistentQty">
+           <input aria-label="Quantity" type="number" min="1" inputmode="numeric" value="${Number(l.qty||0)}" onfocus="deliveryQtyFocus(this)" onclick="this.select()" onblur="deliveryQtyBlur(this)" onchange="editDeliveryLineQty(${i},this.value)">
          </div>
+         <div class="deliveryConsistentPrice" aria-label="Cost">${baht(prices.cost)}</div>
+         <div class="deliveryConsistentPrice" aria-label="Sale">${baht(prices.retail)}</div>
+         <button class="deliveryEditRemoveBtn" type="button" aria-label="Remove ${escapeHtmlAttr(p.name)}" onclick="removeDel(${i})">×</button>
        </div>`;
      }).join("");
    }
@@ -6537,7 +6676,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.27-dev",
+    appVersion:"0.10.28-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -8133,7 +8272,7 @@ function calcImport(){
 
 
 const MD_DEV_RELEASE_META={
-  version:"0.10.27-dev",
+  version:"0.10.28-dev",
   checkpoint:"parent-variant-picker",
   proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery"],
   testing:["parent-variant-picker","dev-self-test"],
@@ -9474,7 +9613,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.27-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.28-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -9804,7 +9943,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.27-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.28-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -9874,7 +10013,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.27-dev',
+        app_version:'0.10.28-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,
