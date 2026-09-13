@@ -4411,7 +4411,7 @@ body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{grid
 }
 
 
-/* v0.10.31 DEV — Delivery Action Bar + Keyboard Focus Lego block.
+/* v0.10.32 DEV — Delivery Action Bar + Keyboard Focus Lego block.
    Authoritative footer: Cancel | Clear | Save, with Save always on the right.
    The entire bar is portalled to body so no delivery content can paint over it. */
 body.deliveryMode > .deliverySaveActions.deliveryActionPortal{
@@ -4494,6 +4494,11 @@ body.deliveryMode.deliveryLineEditFocus .deliveryConsistentRow.keyboardTarget{
   body.deliveryMode > .deliverySaveActions.deliveryActionPortal #clearDelivery,
   body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{font-size:11px!important;padding:5px 3px!important}
 }
+
+/* v0.10.32 — Sunday import integrity */
+.detectedBlockNote{margin-top:3px;font-size:9px;line-height:1.3;color:#667085}
+.detectedBlock.detectedConflict{border-left:4px solid #b45309;background:#fffbeb}
+
 </style>
 </head>
 <body>
@@ -4508,7 +4513,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.31 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.32 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -5605,6 +5610,19 @@ function runDevSelfTests(){
    const clearLabelOk=!!clearBtn && clearBtn.textContent.trim()==="Clear";
    rows.push(devSelfTestRow("Delivery Clear label",clearLabelOk?"pass":"fail",
      clearLabelOk?'Create/Edit use the same "Clear" label.':`Unexpected Clear label: ${clearBtn?.textContent?.trim()||"missing"}`));
+   const sundayKeyCounts=new Map();
+   (db.sundayImports||[]).forEach(r=>{
+     const key=`${canonicalBranchName(r.branch)}::${r.date}`;
+     sundayKeyCounts.set(key,(sundayKeyCounts.get(key)||0)+1);
+   });
+   const duplicateSundayKeys=[...sundayKeyCounts.entries()].filter(([,n])=>n>1);
+   rows.push(devSelfTestRow("Sunday duplicate keys",duplicateSundayKeys.length?"fail":"pass",
+     duplicateSundayKeys.length?`${duplicateSundayKeys.length} duplicate branch/date Sunday key(s) found.`:"No duplicate branch/date Sunday reports."));
+
+   const importIds=new Set((db.sundayImports||[]).map(r=>r.id));
+   const orphanExcelWeeks=(db.weeks||[]).filter(w=>/Excel Sunday import/i.test(w.source||"") && w.sourceArchiveId && !importIds.has(w.sourceArchiveId));
+   rows.push(devSelfTestRow("Sunday linked-week integrity",orphanExcelWeeks.length?"warn":"pass",
+     orphanExcelWeeks.length?`${orphanExcelWeeks.length} Excel weekly record(s) have no matching Sunday archive record.`:"Sunday archive ↔ weekly record links are intact."));
 
    const cloudOk=!!document.getElementById("cloudSyncDecision");
    rows.push(devSelfTestRow("Stage 2D DEV guard",cloudOk?"pass":"warn",
@@ -6826,7 +6844,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.31-dev",
+    appVersion:"0.10.32-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -7219,6 +7237,45 @@ function parseWeeklyBlock(rows,start,end,branch,filename,sheetName,idx){
  const dates=findDateNearBlock(rows,start),date=dates.checkDate||today(),branchLabel=displayBranchName(branch||"Unknown-Branch");
  return {sheetName,branch,date,oldDate:dates.oldDate,rows:parsed,archiveName:`${date}_${sanitizeArchivePart(branchLabel)}_Sunday-Stock.xlsx`,originalFilename:filename,blockIndex:idx,startRow:start+1,endRow:end};
 }
+
+function sundayReportFingerprint(rep){
+  const rows=(rep?.rows||[]).map(r=>[
+    Number(r.no)||0,
+    normalizeProductKey(r.product||""),
+    r.oldStock??null,r.newDeliver??null,r.takeOut??null,r.total??null,
+    r.inStock??null,r.sold??null,r.sellPrice??null,r.cost??null,
+    r.totalSales??null,r.totalCost??null,r.totalProfit??null,
+    r.bmShare??null,r.alixShare??null,r.pinShare??null
+  ]);
+  return JSON.stringify({
+    branch:canonicalBranchName(rep?.branch||""),
+    date:String(rep?.date||""),
+    oldDate:String(rep?.oldDate||""),
+    rows
+  });
+}
+function sundayImportMatchState(rep){
+  ensureSundayArchive();
+  const sameKey=(db.sundayImports||[]).filter(x=>
+    canonicalBranchName(x.branch)===canonicalBranchName(rep?.branch) &&
+    String(x.date||"")===String(rep?.date||"")
+  );
+  if(!sameKey.length)return {state:"new",matches:[]};
+  const incoming=sundayReportFingerprint(rep);
+  const identical=sameKey.filter(x=>sundayReportFingerprint(x)===incoming);
+  if(identical.length)return {state:"identical",matches:sameKey,identical};
+  return {state:"conflict",matches:sameKey,identical:[]};
+}
+function sundayInvoicesForReport(rep){
+  const branch=canonicalBranchName(rep?.branch||"");
+  const date=String(rep?.date||"");
+  return (db.invoices||[]).filter(inv=>
+    String(inv.reportDate||"")===date &&
+    (inv.branches||[]).some(b=>canonicalBranchName(b.branch||"")===branch) &&
+    inv.status!=="void"
+  );
+}
+
 function parseSundayWorkbook(arrayBuffer,filename){
  const wb=XLSX.read(arrayBuffer,{type:"array",cellDates:false,cellFormula:true,cellNF:false}); if(!wb.SheetNames.length)throw new Error("Workbook contains no worksheets.");
  const reports=[];
@@ -8171,15 +8228,40 @@ function refreshStoredReconciliations(doSave=true){
 window.deleteSundayReport=async id=>{
   ensureSundayArchive();
   const r=db.sundayImports.find(x=>x.id===id);
-  if(!r) return;
-  const ok=confirm(`Delete this Sunday report?\n\n${r.branch} • ${r.date}\n${r.archiveName}\n\nThis removes the active report, its linked weekly record and the locally archived source file from this device.`);
-  if(!ok) return;
+  if(!r)return;
+
+  const invoices=sundayInvoicesForReport(r);
+  const linkedWeek=(db.weeks||[]).filter(w=>w.sourceArchiveId===id || (
+    canonicalBranchName(w.branch)===canonicalBranchName(r.branch) &&
+    String(w.date||"")===String(r.date||"") &&
+    /Excel/i.test(w.source||"")
+  ));
+  const invoiceWarning=invoices.length
+    ? `\n\nWARNING: ${invoices.length} saved invoice${invoices.length===1?"":"s"} reference this Sunday date/branch. Deleting the source report can make historical financial review incomplete.`
+    :"";
+  const ok=confirm(`Delete this Sunday report?\n\n${displayBranchName(r.branch)} • ${r.date}\n${r.archiveName}\n\nThis removes the report, ${linkedWeek.length} linked weekly record${linkedWeek.length===1?"":"s"} and its locally archived source file.${invoiceWarning}\n\nThis action cannot be undone from inside the app. Create a Full Backup first if you may need it later.`);
+  if(!ok)return;
+
+  if(invoices.length){
+    const typed=prompt(`Safety confirmation\n\nType DELETE to remove a Sunday report linked to saved invoice data.`);
+    if(String(typed||"").trim().toUpperCase()!=="DELETE")return alert("Delete cancelled.");
+  }
+
   db.sundayImports=db.sundayImports.filter(x=>x.id!==id);
-  db.weeks=db.weeks.filter(w=>w.sourceArchiveId!==id && !(w.branch===r.branch&&w.date===r.date&&/Excel/i.test(w.source||"")));
+  db.weeks=db.weeks.filter(w=>w.sourceArchiveId!==id && !(
+    canonicalBranchName(w.branch)===canonicalBranchName(r.branch) &&
+    String(w.date||"")===String(r.date||"") &&
+    /Excel/i.test(w.source||"")
+  ));
   await deleteArchivedSourceFile(id);
+
+  if(db.activeSundayCycleDate===r.date && !(db.sundayImports||[]).some(x=>x.date===r.date)){
+    db.activeSundayCycleDate=null;
+  }
   cleanupDataIntegrity();
   const recs=refreshStoredReconciliations();
   if(activeSundayArchiveId===id)activeSundayArchiveId=null;
+  save();
   renderArchive();
   renderExcelReconciliation(recs.slice(-4));
   renderAll();
@@ -8235,29 +8317,75 @@ window.selectSundayArchive=id=>{
 
 let detectedWorkbookBlocks=[];
 async function preflightSelectedXlsxFiles(){
- detectedWorkbookBlocks=[];const panel=document.getElementById("detectedBlocksPanel"),list=document.getElementById("detectedBlocksList");
+ detectedWorkbookBlocks=[];
+ const panel=document.getElementById("detectedBlocksPanel"),list=document.getElementById("detectedBlocksList");
  if(!selectedXlsxFiles.length){panel.style.display="none";list.innerHTML="";return}
  const ok=await loadSheetJS();if(!ok)return;
  let n=0;
  for(const file of selectedXlsxFiles){
-  try{const reps=parseSundayWorkbook(await file.arrayBuffer(),file.name);reps.forEach(rep=>detectedWorkbookBlocks.push({id:`B${n++}`,file,rep,selected:true}))}
-  catch(err){detectedWorkbookBlocks.push({id:`B${n++}`,file,rep:null,selected:false,error:err.message})}
+  try{
+   const reps=parseSundayWorkbook(await file.arrayBuffer(),file.name);
+   const perSheet={};
+   reps.forEach(rep=>{perSheet[rep.sheetName]=(perSheet[rep.sheetName]||0)+1});
+   const seenSheet={};
+   reps.forEach(rep=>{
+     seenSheet[rep.sheetName]=(seenSheet[rep.sheetName]||0)+1;
+     const match=sundayImportMatchState(rep);
+     detectedWorkbookBlocks.push({
+       id:`B${n++}`,file,rep,
+       selected:match.state==="new",
+       importState:match.state,
+       existingMatches:match.matches||[],
+       sheetWeekIndex:seenSheet[rep.sheetName],
+       sheetWeekCount:perSheet[rep.sheetName]||1
+     });
+   });
+  }catch(err){
+   detectedWorkbookBlocks.push({id:`B${n++}`,file,rep:null,selected:false,error:err.message,importState:"error"});
+  }
  }
  panel.style.display="block";
+ list.innerHTML=detectedWorkbookBlocks.map(b=>{
+   if(!b.rep)return `<div class="detectedBlock"><input type="checkbox" disabled><div><b>${escapeHtml(b.file.name)}</b><div class="detectedBlockMeta">${escapeHtml(b.error||"Unreadable workbook")}</div></div><span class="reconStatus bad">Unreadable</span></div>`;
+   const multi=b.sheetWeekCount>1?` · Week block ${b.sheetWeekIndex}/${b.sheetWeekCount}`:"";
+   const stateLabel=b.importState==="identical"?"Already imported":b.importState==="conflict"?"Conflict":`${b.rep.rows.length} rows`;
+   const stateClass=b.importState==="identical"?"unknown":b.importState==="conflict"?"warn":"ok";
+   const stateText=b.importState==="identical"
+     ?"Same branch/date/content already stored — skipped by default."
+     : b.importState==="conflict"
+       ?"Same branch/date exists with different content — review before replacing."
+       : `${b.rep.rows.length} product rows detected.`;
+   return `<div class="detectedBlock ${b.importState==="conflict"?"detectedConflict":""}">
+     <input type="checkbox" data-blockid="${b.id}" ${b.selected?"checked":""}>
+     <div><b>${escapeHtml(displayBranchName(b.rep.branch))} · ${escapeHtml(b.rep.date)}</b>
+       <div class="detectedBlockMeta">${escapeHtml(b.file.name)} · ${escapeHtml(b.rep.sheetName)}${escapeHtml(multi)}</div>
+       <div class="detectedBlockNote">${escapeHtml(stateText)}</div>
+     </div>
+     <span class="reconStatus ${stateClass}">${escapeHtml(stateLabel)}</span>
+   </div>`;
+ }).join("");
  updateDetectedBlockSelectionUI();
- list.innerHTML=detectedWorkbookBlocks.map(b=>b.rep?`<div class="detectedBlock"><input type="checkbox" data-blockid="${b.id}" checked><div><b>${b.rep.branch||"Unknown"} · ${b.rep.date}</b><div class="detectedBlockMeta">${b.file.name} • ${b.rep.sheetName} • ${b.rep.rows.length} products</div></div><span class="reconStatus ok">${b.rep.rows.length} rows</span></div>`:`<div class="detectedBlock"><input type="checkbox" disabled><div><b>${b.file.name}</b><div class="detectedBlockMeta">${b.error}</div></div><span class="reconStatus bad">Unreadable</span></div>`).join("");
- updateDetectedBlockSelectionUI();
- list.querySelectorAll("[data-blockid]").forEach(cb=>cb.onchange=()=>{const b=detectedWorkbookBlocks.find(x=>x.id===cb.dataset.blockid);if(b)b.selected=cb.checked;updateDetectedBlockSelectionUI()});
+ list.querySelectorAll("[data-blockid]").forEach(cb=>cb.onchange=()=>{
+   const b=detectedWorkbookBlocks.find(x=>x.id===cb.dataset.blockid);
+   if(b)b.selected=cb.checked;
+   updateDetectedBlockSelectionUI();
+ });
 }
-
 
 function updateDetectedBlockSelectionUI(){
   const valid=detectedWorkbookBlocks.filter(b=>b.rep);
   const selected=valid.filter(b=>b.selected);
+  const conflicts=valid.filter(b=>b.importState==="conflict").length;
+  const identical=valid.filter(b=>b.importState==="identical").length;
   const title=document.getElementById("detectedBlocksTitle");
   const btn=document.getElementById("importXlsx");
-  if(title) title.textContent=`${valid.length} weekly report${valid.length===1?"":"s"} detected`;
-  if(btn) btn.textContent=`Import ${selected.length} Selected Report${selected.length===1?"":"s"}`;
+  if(title){
+    let suffix="";
+    if(conflicts)suffix+=` · ${conflicts} conflict${conflicts===1?"":"s"}`;
+    if(identical)suffix+=` · ${identical} already imported`;
+    title.textContent=`${valid.length} weekly report${valid.length===1?"":"s"} detected${suffix}`;
+  }
+  if(btn)btn.textContent=`Import ${selected.length} Selected Report${selected.length===1?"":"s"}`;
 }
 
 document.getElementById("xlsxFiles").onchange=e=>{
@@ -8291,21 +8419,55 @@ document.getElementById("importXlsx").onclick=async()=>{
  const ok=await loadSheetJS();if(!ok)return alert("The Excel reader could not load.");
  if(!detectedWorkbookBlocks.length)await preflightSelectedXlsxFiles();
  const chosen=detectedWorkbookBlocks.filter(b=>b.selected&&b.rep);if(!chosen.length)return alert("No weekly report blocks selected.");
- ensureSundayArchive();const results=document.getElementById("xlsxResults");results.innerHTML="";const reconReports=[],importedDates=[];
+ ensureSundayArchive();
+ const results=document.getElementById("xlsxResults");results.innerHTML="";
+ const reconReports=[],importedDates=[];
  for(const block of chosen){
   const file=block.file,rep=block.rep;
   try{
-   const mathErrors=validateWorkbookMath(rep),reconciliation=reconcileExcelReport(rep),id="X"+Date.now()+Math.random().toString(36).slice(2,7),stored=await storeOriginalWorkbook(id,file,rep.archiveName);
-   const record={...rep,id,importedAt:new Date().toISOString(),sourceStored:stored,mathErrors,reconciliation};
-   const same=db.sundayImports.filter(x=>x.branch===rep.branch&&x.date===rep.date);
-   if(same.length&&!confirm(`${rep.branch} already has a Sunday report for ${rep.date}.\n\nReplace it?`))continue;
-   db.sundayImports=db.sundayImports.filter(x=>!(x.branch===rep.branch&&x.date===rep.date));db.weeks=db.weeks.filter(w=>!(w.branch===rep.branch&&w.date===rep.date));
+   const match=sundayImportMatchState(rep);
+   if(match.state==="identical"){
+     results.insertAdjacentHTML("beforeend",`<div class="xlsxResult ok"><b>${escapeHtml(rep.archiveName)}</b><br><span class="small">Already imported with identical content — no duplicate created.</span></div>`);
+     continue;
+   }
+
+   if(match.state==="conflict"){
+     const invoices=sundayInvoicesForReport(rep);
+     const invoiceNote=invoices.length
+       ? `\n\nWARNING: ${invoices.length} saved invoice${invoices.length===1?"":"s"} use this Sunday date/branch. Replacing the report may make the invoice require review.`
+       :"";
+     const replace=confirm(`${displayBranchName(rep.branch)} already has a DIFFERENT Sunday report for ${rep.date}.${invoiceNote}\n\nReplace the stored report with this selected workbook block?`);
+     if(!replace){
+       results.insertAdjacentHTML("beforeend",`<div class="xlsxResult warn"><b>${escapeHtml(rep.archiveName)}</b><br><span class="small">Conflict left unchanged.</span></div>`);
+       continue;
+     }
+     for(const old of match.matches||[]){
+       try{await deleteArchivedSourceFile(old.id)}catch(_){}
+     }
+     db.sundayImports=db.sundayImports.filter(x=>!(
+       canonicalBranchName(x.branch)===canonicalBranchName(rep.branch) &&
+       String(x.date||"")===String(rep.date||"")
+     ));
+     db.weeks=db.weeks.filter(w=>!(
+       canonicalBranchName(w.branch)===canonicalBranchName(rep.branch) &&
+       String(w.date||"")===String(rep.date||"")
+     ));
+   }
+
+   const mathErrors=validateWorkbookMath(rep);
+   const reconciliation=reconcileExcelReport(rep);
+   const id="X"+Date.now()+Math.random().toString(36).slice(2,7);
+   const stored=await storeOriginalWorkbook(id,file,rep.archiveName);
+   const record={...rep,id,importedAt:new Date().toISOString(),sourceStored:stored,mathErrors,reconciliation,reportFingerprint:sundayReportFingerprint(rep)};
    db.sundayImports.push(record);reconReports.push(reconciliation);importedDates.push(rep.date);
    const weeklyRows=rep.rows.map(rr=>{const pm=canonicalProductMatchRow(rr),p=pm.product;return {productId:p?.id||null,sourceProductName:rr.product,opening:rr.oldStock,delivered:rr.newDeliver||0,takeout:rr.takeOut||0,closing:rr.inStock,reportedSold:rr.sold,sellPrice:rr.sellPrice,cost:rr.cost,historyKnown:rr.oldStock!=null,source:"Excel"}});
-   db.weeks.push({id:"W"+Date.now()+Math.random().toString(36).slice(2,5),branch:rep.branch,date:rep.date,source:"Excel Sunday import",sourceArchiveId:id,rows:weeklyRows,totals:{sales:rep.rows.reduce((s,r)=>s+(r.totalSales||0),0),cost:rep.rows.reduce((s,r)=>s+(r.totalCost||0),0),profit:rep.rows.reduce((s,r)=>s+(r.totalProfit||0),0),bm:rep.rows.reduce((s,r)=>s+(r.bmShare||0),0),alix:rep.rows.reduce((s,r)=>s+(r.alixShare||0),0),pin:rep.rows.reduce((s,r)=>s+(r.pinShare||0),0)},importAudit:{type:"xlsx",archiveName:rep.archiveName,mathErrors,reconciliation}});
+   db.weeks.push({id:"W"+Date.now()+Math.random().toString(36).slice(2,5),branch:rep.branch,date:rep.date,source:"Excel Sunday import",sourceArchiveId:id,rows:weeklyRows,totals:{sales:rep.rows.reduce((s,r)=>s+(r.totalSales||0),0),cost:rep.rows.reduce((s,r)=>s+(r.totalCost||0),0),profit:rep.rows.reduce((s,r)=>s+(r.totalProfit||0),0),bm:rep.rows.reduce((s,r)=>s+(r.bmShare||0),0),alix:rep.rows.reduce((s,r)=>s+(r.alixShare||0),0),pin:rep.rows.reduce((s,r)=>s+(r.pinShare||0),0)},importAudit:{type:"xlsx",archiveName:rep.archiveName,mathErrors,reconciliation,reportFingerprint:record.reportFingerprint}});
    save();
-   results.insertAdjacentHTML("beforeend",`<div class="xlsxResult ${mathErrors.length?"warn":"ok"}"><b>${rep.archiveName}</b><br><span class="small">${displayBranchName(rep.branch)} • ${rep.date} • ${rep.rows.length} product rows</span></div>`);
-  }catch(err){results.insertAdjacentHTML("beforeend",`<div class="xlsxResult bad"><b>${file.name}</b><br><span class="small">${err.message}</span></div>`)}
+   const blockInfo=block.sheetWeekCount>1?` · block ${block.sheetWeekIndex}/${block.sheetWeekCount}`:"";
+   results.insertAdjacentHTML("beforeend",`<div class="xlsxResult ${mathErrors.length?"warn":"ok"}"><b>${escapeHtml(rep.archiveName)}</b><br><span class="small">${escapeHtml(displayBranchName(rep.branch))} • ${escapeHtml(rep.date)} • ${rep.rows.length} product rows${escapeHtml(blockInfo)}</span></div>`);
+  }catch(err){
+   results.insertAdjacentHTML("beforeend",`<div class="xlsxResult bad"><b>${escapeHtml(file.name)}</b><br><span class="small">${escapeHtml(err.message)}</span></div>`);
+  }
  }
  if(importedDates.length){
    const newest=[...new Set(importedDates.filter(Boolean))].sort((a,b)=>String(b).localeCompare(String(a)))[0];
@@ -8313,6 +8475,7 @@ document.getElementById("importXlsx").onclick=async()=>{
    localStorage.setItem("mdpin-db",JSON.stringify(db));
  }
  cleanupDataIntegrity();refreshStoredReconciliations();retroactivelyRemapAllImports();renderArchive();renderExcelReconciliation(reconReports);renderMappingReview();renderMappingManager();renderAll();
+ await preflightSelectedXlsxFiles();
  if(document.body.classList.contains("workflowMode")){sundayWizardStep=1;renderSundayWizard();}
 };
 
@@ -8422,10 +8585,10 @@ function calcImport(){
 
 
 const MD_DEV_RELEASE_META={
-  version:"0.10.31-dev",
-  checkpoint:"stable-candidate",
+  version:"0.10.32-dev",
+  checkpoint:"sunday-import-integrity",
   proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery","parent-variant-picker","delivery-fixed-action-footer","editable-delivery-row"],
-  testing:["dev-self-test","stable-candidate-smoke-test"],
+  testing:["sunday-multiweek-preflight","duplicate-conflict-guard","safe-sunday-delete","dev-self-test"],
   devOnly:["supabase-reference-sync","stage2a","stage2b","stage2c","stage2d"]
 };
 
@@ -9763,7 +9926,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.31-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.32-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -10093,7 +10256,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.31-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.32-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -10163,7 +10326,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.31-dev',
+        app_version:'0.10.32-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,

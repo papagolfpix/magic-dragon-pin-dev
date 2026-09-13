@@ -1,46 +1,49 @@
-MAGIC DRAGON PIN v0.10.31 DEV — STABLE CANDIDATE
+MAGIC DRAGON PIN v0.10.32 DEV — SUNDAY IMPORT INTEGRITY
 
-Built directly from the user-supplied v0.10.30 DEV THREE-ACTION KEYBOARD FIX baseline.
+Built from the proven v0.10.31 DEV stable checkpoint.
 
-PURPOSE
-This is a conservative consolidation/stable-candidate release. No large workflow feature is introduced.
+WHAT THIS RELEASE DOES
+1. MULTI-WEEK WORKBOOK PREFLIGHT
+   The existing parser already detects multiple weekly stock blocks in one worksheet.
+   v0.10.32 makes that visible before import as Week block 1/N, 2/N, etc.
 
-CHANGES
-- Standardized the Delivery action label to "Clear" in both Create and Edit/Suggested Delivery.
-- Kept the proven three-action fixed footer: Cancel | Clear | Save.
-- Kept the shared editable Delivery row component.
-- Kept the Parent Product -> explicit Variant -> resolved SKU flow.
-- Kept Sunday-context filtering + Show all products.
-- Kept the iPhone visualViewport / keyboard focus hardening.
-- Extended DEV Self-Test with a Delivery Clear-label consistency check.
-- Updated internal release metadata to mark this as the stable-candidate checkpoint.
+2. DUPLICATE / CONFLICT CLASSIFICATION
+   Each detected Sunday block is compared using:
+   branch + Sunday date + old-stock date + normalized row content.
+   States:
+   - NEW: selected by default.
+   - ALREADY IMPORTED: identical content exists; skipped by default and never creates a duplicate.
+   - CONFLICT: same branch/date exists but content differs; not selected by default and requires explicit replacement confirmation.
 
-CURRENT PROVEN DEV BLOCKS
-- Parent Product -> Variant -> Resolved SKU
-- Shared full catalogue for BM Bangrak and Lamai
-- Sunday restock context filter + Show all products
-- Editable Delivery rows
-- iPhone fixed viewport action footer
-- Keyboard-safe focus/scroll owner handling
-- Backup & Recovery
-- DEV Self-Test diagnostics
-- Stage 2D reference-cloud guard remains DEV-only
+3. SAFE REPLACEMENT
+   Replacing a conflicting report deletes the previous locally archived source file rather than leaving an orphan.
+   If saved invoices reference the same branch/date, the replacement warning says so explicitly.
 
-SMOKE TEST
-1. Create Delivery: confirm footer reads Cancel | Clear | Save.
-2. Edit/Suggested Delivery: confirm footer also reads Cancel | Clear | Save.
-3. Add a line, edit Qty in place and verify the keyboard does not hide the active row.
-4. Parent Product -> choose Variant explicitly -> Add line.
-5. Suggested Sunday docket: verify context subset, then Show all products.
-6. Settings -> DEV Self-Test: run and confirm no FAIL results.
-7. Verify visible version reads v0.10.31 DEV.
+4. SAFER REPORT DELETE
+   Delete confirmation now states how many linked weekly records will be removed.
+   If saved invoice data references that branch/date, a second confirmation requires typing DELETE.
+   If the deleted date was the active Sunday cycle and no reports remain for that date, the active-cycle marker is cleared.
 
-PIN PRODUCTION
-Do not copy this whole DEV build into Pin production. Continue selective backporting of only proven features.
+5. DEV SELF-TEST
+   Added:
+   - duplicate branch/date Sunday report check
+   - Sunday archive ↔ weekly-record link integrity check
 
-NEXT MAJOR DEV BLOCK AFTER STABLE CHECKPOINT
-Sunday import robustness:
-- multiple weeks on one sheet
-- duplicate-week conflict handling
-- safer report deletion/removal
-- cleaner new/changed-only mapping review
+REUSABLE LEGO BLOCK
+Sunday Import Integrity Guard:
+Preflight -> Block Detection -> Fingerprint -> NEW / IDENTICAL / CONFLICT -> Explicit Direction -> Linked Cleanup -> Self-Test
+
+IMPORTANT
+No invoice calculation, profit split, delivery calculation, Parent/Variant, cloud schema or Stage 2D behavior is changed.
+
+TEST
+A. Upload a workbook containing multiple weeks on one sheet:
+   confirm each week appears as a separate detected block before import.
+B. Select an already-imported identical week:
+   it should say Already imported and create no duplicate.
+C. Upload a changed version of an existing branch/date:
+   it should show Conflict and require explicit replacement.
+D. Delete a non-invoiced Sunday report:
+   confirm linked weekly record is also removed.
+E. Run Settings -> DEV Self-Test:
+   Sunday duplicate keys should PASS.
