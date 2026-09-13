@@ -4411,7 +4411,7 @@ body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{grid
 }
 
 
-/* v0.10.35 DEV — Delivery Action Bar + Keyboard Focus Lego block.
+/* v0.10.37 DEV — Delivery Action Bar + Keyboard Focus Lego block.
    Authoritative footer: Cancel | Clear | Save, with Save always on the right.
    The entire bar is portalled to body so no delivery content can paint over it. */
 body.deliveryMode > .deliverySaveActions.deliveryActionPortal{
@@ -4495,12 +4495,12 @@ body.deliveryMode.deliveryLineEditFocus .deliveryConsistentRow.keyboardTarget{
   body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{font-size:11px!important;padding:5px 3px!important}
 }
 
-/* v0.10.35 — Sunday import integrity */
+/* v0.10.37 — Sunday import integrity */
 .detectedBlockNote{margin-top:3px;font-size:9px;line-height:1.3;color:#667085}
 .detectedBlock.detectedConflict{border-left:4px solid #b45309;background:#fffbeb}
 
 
-/* v0.10.35 — Sunday source correction clarity */
+/* v0.10.37 — Sunday source correction clarity */
 .sundayCorrectionNotice{background:#fff7ed!important;border-color:#fdba74!important;color:#7c2d12!important}
 .correctionGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
 .correctionGrid>div{background:#fff;border:1px solid #fed7aa;border-radius:10px;padding:8px 10px;display:flex;justify-content:space-between;gap:10px}
@@ -4510,6 +4510,33 @@ body.deliveryMode.deliveryLineEditFocus .deliveryConsistentRow.keyboardTarget{
 .correctionGrid .correctionDue strong{font-size:16px}
 .correctionResolution{margin-top:9px;font-size:12px;line-height:1.4;font-weight:700}
 @media(max-width:520px){.correctionGrid{grid-template-columns:1fr}}
+
+
+/* v0.10.37 — Sunday-ready import classification */
+.wizardImportSummary{
+  margin:8px 0 5px;
+  padding:8px 10px;
+  border:1px solid #dbe1e9;
+  border-radius:10px;
+  background:#f8fafc;
+  color:#344054;
+  font-size:11px;
+  font-weight:850;
+}
+.wizardDetectedRow{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  padding:8px 0;
+  border-bottom:1px solid #edf0f4;
+}
+.wizardDetectedRow:last-child{border-bottom:0}
+.wizardDetectedRow>div{display:grid;gap:2px;min-width:0}
+.wizardDetectedRow span{font-size:11px;font-weight:850;color:#172033}
+.wizardDetectedRow small{font-size:9px;color:#667085}
+.wizardDetectedRow.conflict{background:#fffaf0}
+.wizardDetectedRow.identical{opacity:.82}
 
 </style>
 </head>
@@ -4525,7 +4552,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.35 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.37 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -5153,7 +5180,7 @@ if(!Array.isArray(db.docketAudit)) db.docketAudit=[];
 if(!Array.isArray(db.invoices)) db.invoices=[];
 if(!Array.isArray(db.adjustments)) db.adjustments=[];
 function save(){localStorage.setItem("mdpin-db",JSON.stringify(db));renderAll()}
-function baht(n){return "฿"+Number(n||0).toLocaleString("en-US",{maximumFractionDigits:2})}
+function baht(n){const v=Number(n||0);return "฿"+v.toLocaleString("en-US",{minimumFractionDigits:Number.isInteger(v)?0:2,maximumFractionDigits:2})}
 function today(){return new Date().toISOString().slice(0,10)}
 document.getElementById("delDate").value=today();document.getElementById("weekDate").value=today();document.getElementById("impDate").value=today();
 
@@ -5642,18 +5669,33 @@ function runDevSelfTests(){
      typeof sourceCorrectionAdjustmentForInvoice==="function";
    rows.push(devSelfTestRow("Sunday correction carry-forward",correctionHelpersOk?"pass":"fail",
      correctionHelpersOk?"Financial delta + paid-invoice carry-forward path is available.":"Sunday correction accounting helper is missing."));
-   const activeSourceCorrections=(db.adjustments||[]).filter(a=>a?.sourceType==="sunday_report_correction"&&a.status==="pending"&&!a.appliedToDate);
+   reconcilePendingSundayCorrectionAdjustments();
+   const unsettledSource=(db.adjustments||[]).filter(sundayCorrectionIsUnsettled);
    const sourceGroups=new Map();
-   activeSourceCorrections.forEach(a=>{
+   unsettledSource.forEach(a=>{
      const k=sundayCorrectionGroupKey(a);
      sourceGroups.set(k,(sourceGroups.get(k)||0)+1);
    });
    const unnettedGroups=[...sourceGroups.values()].filter(n=>n>1).length;
-   rows.push(devSelfTestRow("Sunday correction equilibrium",unnettedGroups?"fail":"pass",
-     unnettedGroups?`${unnettedGroups} source-correction group(s) still contain multiple unapplied adjustments.`:"Unapplied Sunday corrections are netted to one balance or cancel to zero."));
+   const stalePseudoApplied=(db.adjustments||[]).filter(a=>
+     a?.sourceType==="sunday_report_correction"&&a.status==="applied"&&!sundayCorrectionIsActuallyApplied(a)
+   ).length;
+   rows.push(devSelfTestRow("Sunday correction chain integrity",(unnettedGroups||stalePseudoApplied)?"fail":"pass",
+     unnettedGroups?`${unnettedGroups} source chain(s) still contain multiple unsettled balances.`:
+     stalePseudoApplied?`${stalePseudoApplied} source correction(s) are marked applied without being present in a saved invoice.`:
+     "Each source Sunday has at most one unsettled financial balance; only saved-invoice application is immutable."));
    const importResetOk=typeof resetSundayImportSession==="function" && !!document.getElementById("clearXlsxSelection") && !!document.getElementById("toggleSundayImport");
    rows.push(devSelfTestRow("Sunday import transient-state reset",importResetOk?"pass":"fail",
      importResetOk?"Clear Selection and Close Import share the full transient-session reset helper.":"Sunday import reset helper or controls are missing."));
+   const latestGroup=typeof latestActiveSuggestedPackingGroup==="function"?latestActiveSuggestedPackingGroup():null;
+   const latestDate=latestGroup?.date||"";
+   const dashboardLatestOnly=(db.deliveries||[]).filter(d=>isSuggestedDraftDocket(d)&&String(d.sourceSundayDate||d.date||"")===String(latestDate)).length;
+   rows.push(devSelfTestRow("Dashboard latest suggestion scope","pass",
+     latestDate?`Dashboard scope is latest Sunday ${latestDate} (${dashboardLatestOnly} draft(s)); older drafts remain in Records.`:"No active suggested-docket group yet."));
+
+   const moneyFormatOk=baht(8136.5)==="฿8,136.50" && baht(1020)==="฿1,020";
+   rows.push(devSelfTestRow("Currency precision",moneyFormatOk?"pass":"fail",
+     moneyFormatOk?"Fractional baht shows 2 decimals; whole baht stays compact.":`Unexpected format: ${baht(8136.5)} / ${baht(1020)}`));
 
    const cloudOk=!!document.getElementById("cloudSyncDecision");
    rows.push(devSelfTestRow("Stage 2D DEV guard",cloudOk?"pass":"warn",
@@ -6875,7 +6917,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.35-dev",
+    appVersion:"0.10.37-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -7022,18 +7064,19 @@ function renderPinDashboard(){
   const draftsBox=document.getElementById("pinSuggestedDrafts");
   if(draftsBox){
     migrateLegacyDeliverySuggestions();
+    const packingGroup=latestActiveSuggestedPackingGroup();
+    const latestSuggestionDate=packingGroup?.date||"";
     const drafts=[...(db.deliveries||[])]
-      .filter(isSuggestedDraftDocket)
+      .filter(d=>isSuggestedDraftDocket(d) && String(d.sourceSundayDate||d.date||"")===String(latestSuggestionDate))
       .sort((a,b)=>String(a.branch||"").localeCompare(String(b.branch||"")));
     if(!drafts.length){
       draftsBox.style.display="none";
       draftsBox.innerHTML="";
     }else{
       draftsBox.style.display="grid";
-      const packingGroup=latestActiveSuggestedPackingGroup();
       const packingRows=packingGroup?combinedSuggestedPackingRows(packingGroup.date):[];
       const packingQty=packingRows.reduce((n,r)=>n+Number(r.qty||0),0);
-      draftsBox.innerHTML=`<div class="pinSuggestedTitle">Suggested delivery dockets</div>`+
+      draftsBox.innerHTML=`<div class="pinSuggestedTitle">Latest suggested delivery dockets</div>`+
         drafts.map(d=>{
           const ref=d.suggestedRef||suggestedDraftRef(d.sourceSundayDate||d.date,d.branch);
           const qty=(d.lines||[]).reduce((n,l)=>n+Number(l.qty||0),0);
@@ -7329,16 +7372,51 @@ function findAffectedInvoiceForSundayCorrection(sourceDate){
 }
 function sourceCorrectionAdjustmentForInvoice(inv){
   if(!inv)return null;
-  return [...(db.adjustments||[])].filter(a=>a&&a.sourceType==="sunday_report_correction"&&a.oldInvoiceId===inv.id&&["pending","applied"].includes(a.status))
-    .sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")))[0]||null;
+  reconcilePendingSundayCorrectionAdjustments();
+  return [...(db.adjustments||[])].filter(a=>
+    a&&
+    a.sourceType==="sunday_report_correction"&&
+    a.oldInvoiceId===inv.id&&
+    (
+      (a.status==="pending"&&Math.abs(Number(a.amount||0))>=0.005) ||
+      sundayCorrectionIsActuallyApplied(a)
+    )
+  ).sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")))[0]||null;
 }
 
 function sundayCorrectionGroupKey(adj){
+  // Source corrections belong to one chain by the thing that changed:
+  // branch + source Sunday. Do NOT split the chain by oldInvoiceId,
+  // because the affected invoice reference can change as historical
+  // records are reviewed/revised.
   return [
     canonicalBranchName(adj?.branch||""),
-    String(adj?.sourceDate||""),
-    String(adj?.oldInvoiceId||"")
+    String(adj?.sourceDate||"")
   ].join("::");
+}
+function sundayCorrectionIsActuallyApplied(adj){
+  if(!adj||adj.sourceType!=="sunday_report_correction")return false;
+  const invoiceId=adj.appliedToInvoiceId||null;
+  if(!invoiceId)return false;
+  const inv=(db.invoices||[]).find(x=>x&&x.id===invoiceId);
+  if(!inv)return false;
+  return (inv.adjustmentsApplied||[]).some(x=>x&&x.id===adj.id);
+}
+function sundayCorrectionIsClosedSeparately(adj){
+  return !!adj && (
+    (adj.status==="resolved"&&adj.resolution==="handled_separately") ||
+    adj.status==="void"
+  );
+}
+function sundayCorrectionIsUnsettled(adj){
+  if(!adj||adj.sourceType!=="sunday_report_correction")return false;
+  if(sundayCorrectionIsActuallyApplied(adj))return false;
+  if(sundayCorrectionIsClosedSeparately(adj))return false;
+  if(adj.status==="netted"&&adj.resolution==="equilibrium_restored")return false;
+  // Pending, queued, or stale "applied" flags without proof in a saved
+  // invoice are all still financially unsettled and must participate
+  // in source-chain netting.
+  return true;
 }
 function aggregateSundayCorrectionBreakdown(items){
   const out={unitsSold:0,sales:0,cost:0,profit:0,bm:0,alix:0,pinProfit:0,payPin:0};
@@ -7352,21 +7430,36 @@ function aggregateSundayCorrectionBreakdown(items){
 function reconcilePendingSundayCorrectionAdjustments(){
   if(!Array.isArray(db.adjustments))db.adjustments=[];
   if(!Array.isArray(db.sundaySourceCorrections))db.sundaySourceCorrections=[];
-  const pending=db.adjustments.filter(a=>a&&a.sourceType==="sunday_report_correction"&&a.status==="pending"&&!a.appliedToDate);
+
+  const unsettled=db.adjustments.filter(sundayCorrectionIsUnsettled);
   const groups=new Map();
-  pending.forEach(a=>{
+  unsettled.forEach(a=>{
     const key=sundayCorrectionGroupKey(a);
     if(!groups.has(key))groups.set(key,[]);
     groups.get(key).push(a);
   });
+
   let changed=false;
   groups.forEach(items=>{
     if(items.length<2)return;
     items.sort((a,b)=>String(a.createdAt||"").localeCompare(String(b.createdAt||"")));
+
     const net=+items.reduce((n,a)=>n+Number(a.amount||0),0).toFixed(2);
     const breakdown=aggregateSundayCorrectionBreakdown(items);
     const latest=items.at(-1);
     const now=new Date().toISOString();
+
+    // Clear stale pseudo-application metadata if it is not backed by
+    // a saved invoice containing this adjustment.
+    items.forEach(a=>{
+      if(!sundayCorrectionIsActuallyApplied(a) && (a.status==="applied"||a.appliedToInvoiceId||a.appliedToDate)){
+        a.status="pending";
+        delete a.appliedToInvoiceId;
+        delete a.appliedToDate;
+        delete a.resolvedAt;
+        changed=true;
+      }
+    });
 
     items.slice(0,-1).forEach(a=>{
       a.status="netted";
@@ -7381,8 +7474,11 @@ function reconcilePendingSundayCorrectionAdjustments(){
       latest.amount=0;
       latest.resolution="equilibrium_restored";
       latest.breakdown=breakdown;
+      latest.netAmount=0;
       latest.nettedAt=now;
       latest.equilibriumRestored=true;
+      delete latest.appliedToInvoiceId;
+      delete latest.appliedToDate;
       changed=true;
 
       items.forEach(a=>{
@@ -7394,12 +7490,21 @@ function reconcilePendingSundayCorrectionAdjustments(){
         }
       });
     }else{
+      // Keep ONE active balance for the entire unsettled source chain.
+      latest.status="pending";
       latest.amount=net;
       latest.breakdown=breakdown;
       latest.netAmount=net;
       latest.nettedFrom=items.slice(0,-1).map(a=>a.id);
-      latest.resolution=latest.resolution==="next_sunday_auto"?"next_sunday_auto":"carry_forward_pending";
+      latest.resolution=latest.affectedInvoicePaid===false
+        ? "carry_forward_pending"
+        : "next_sunday_auto";
+      // Preserve next_sunday_auto for corrections linked to paid history.
+      if(items.some(a=>a.resolution==="next_sunday_auto"))latest.resolution="next_sunday_auto";
+      delete latest.appliedToInvoiceId;
+      delete latest.appliedToDate;
       changed=true;
+
       const c=db.sundaySourceCorrections.find(x=>x.id===latest.sourceCorrectionId);
       if(c){
         c.netAmount=net;
@@ -7407,6 +7512,7 @@ function reconcilePendingSundayCorrectionAdjustments(){
       }
     }
   });
+
   if(changed)localStorage.setItem("mdpin-db",JSON.stringify(db));
   return changed;
 }
@@ -7445,6 +7551,7 @@ function registerSundayReportCorrection(oldRep,newRep){
       newInvoiceId:null,
       oldNumber:affected?.number||"",
       newNumber:"",
+      affectedInvoicePaid:paid,
       createdAt:new Date().toISOString(),
       resolution:paid?"next_sunday_auto":"carry_forward_pending",
       description:`Sunday report correction · ${displayBranchName(newRep.branch)} · ${invoiceDateLabel(newRep.date)}`,
@@ -8716,12 +8823,17 @@ document.getElementById("importXlsx").onclick=async()=>{
    db.weeks.push({id:"W"+Date.now()+Math.random().toString(36).slice(2,5),branch:rep.branch,date:rep.date,source:"Excel Sunday import",sourceArchiveId:id,rows:weeklyRows,totals:{sales:rep.rows.reduce((s,r)=>s+(r.totalSales||0),0),cost:rep.rows.reduce((s,r)=>s+(r.totalCost||0),0),profit:rep.rows.reduce((s,r)=>s+(r.totalProfit||0),0),bm:rep.rows.reduce((s,r)=>s+(r.bmShare||0),0),alix:rep.rows.reduce((s,r)=>s+(r.alixShare||0),0),pin:rep.rows.reduce((s,r)=>s+(r.pinShare||0),0)},importAudit:{type:"xlsx",archiveName:rep.archiveName,mathErrors,reconciliation,reportFingerprint:record.reportFingerprint}});
    save();
    const blockInfo=block.sheetWeekCount>1?` · block ${block.sheetWeekIndex}/${block.sheetWeekCount}`:"";
-   const correctionResult=sourceCorrection&&sourceCorrection.adjustmentId?(()=>{
-     const a=(db.adjustments||[]).find(x=>x.id===sourceCorrection.adjustmentId),d=sourceCorrection.delta||{};
-     if(a?.resolution==="equilibrium_restored"||sourceCorrection.resolution==="equilibrium_restored"){
+   const correctionResult=sourceCorrection?(()=>{
+     const d=sourceCorrection.delta||{},a=sourceCorrection.adjustmentId?(db.adjustments||[]).find(x=>x.id===sourceCorrection.adjustmentId):null;
+     reconcilePendingSundayCorrectionAdjustments();
+     const refreshed=a?(db.adjustments||[]).find(x=>x.id===a.id):null;
+     if(refreshed?.resolution==="equilibrium_restored"||sourceCorrection.resolution==="equilibrium_restored"){
        return `<div class="small" style="margin-top:5px"><b>Equilibrium restored:</b> this change cancels the earlier unapplied correction. The paid invoice is valid again and <b>nothing will carry forward</b>.</div>`;
      }
-     return `<div class="small" style="margin-top:5px"><b>Correction recorded:</b> Sales ${d.sales>=0?"+":""}${baht(d.sales)} · Cost ${d.cost>=0?"+":""}${baht(d.cost)} · Pin profit ${d.pinProfit>=0?"+":""}${baht(d.pinProfit)} · <b>Net Pay Pin ${Number(a?.amount||0)>=0?"+":""}${baht(a?.amount||0)}</b>${sourceCorrection.affectedInvoicePaid?" · queued for next Sunday because the affected invoice is already paid":""}.</div>`;
+     if(Math.abs(Number(d.payPin||0))<0.005){
+       return `<div class="small" style="margin-top:5px"><b>Stock/source correction only:</b> product history changed, but the financial settlement is unchanged. <b>No invoice action and no carry-forward.</b></div>`;
+     }
+     return `<div class="small" style="margin-top:5px"><b>Correction recorded:</b> Sales ${d.sales>=0?"+":""}${baht(d.sales)} · Cost ${d.cost>=0?"+":""}${baht(d.cost)} · Pin profit ${d.pinProfit>=0?"+":""}${baht(d.pinProfit)} · <b>Net Pay Pin ${Number(refreshed?.amount||d.payPin||0)>=0?"+":""}${baht(refreshed?.amount??d.payPin??0)}</b>${sourceCorrection.affectedInvoicePaid?" · queued for next Sunday because the affected invoice is already paid":""}.</div>`;
    })():"";
    results.insertAdjacentHTML("beforeend",`<div class="xlsxResult ${mathErrors.length?"warn":"ok"}"><b>${escapeHtml(rep.archiveName)}</b><br><span class="small">${escapeHtml(displayBranchName(rep.branch))} • ${escapeHtml(rep.date)} • ${rep.rows.length} product rows${escapeHtml(blockInfo)}</span>${correctionResult}</div>`);
   }catch(err){
@@ -8844,10 +8956,10 @@ function calcImport(){
 
 
 const MD_DEV_RELEASE_META={
-  version:"0.10.35-dev",
-  checkpoint:"sunday-correction-equilibrium",
-  proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery","parent-variant-picker","delivery-fixed-action-footer","editable-delivery-row","sunday-multiweek-preflight","duplicate-conflict-guard","safe-sunday-delete","import-session-reset","sunday-financial-delta","paid-invoice-carry-forward"],
-  testing:["sunday-correction-netting","equilibrium-restore","historical-replacement-no-reopen","dev-self-test"],
+  version:"0.10.37-dev",
+  checkpoint:"sunday-ready-after-restore",
+  proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery","parent-variant-picker","delivery-fixed-action-footer","editable-delivery-row","sunday-multiweek-preflight","duplicate-conflict-guard","safe-sunday-delete","import-session-reset","sunday-financial-delta","paid-invoice-carry-forward","source-chain-netting"],
+  testing:["restore-clean-sunday-import","wizard-import-classification","latest-suggestion-dashboard","currency-precision","dev-self-test"],
   devOnly:["supabase-reference-sync","stage2a","stage2b","stage2c","stage2d"]
 };
 
@@ -9191,9 +9303,40 @@ function wizardImportSelected(){
   const btn=document.getElementById("importXlsx");if(btn)btn.click();
 }
 function wizardImportMarkup(){
-  if(!selectedXlsxFiles.length)return `<div class="wizardLocked">No Sunday report has been imported yet.</div><div class="wizardActions"><button class="btn gold" onclick="wizardChooseExcel()">Choose Excel files</button></div>`;
+  if(!selectedXlsxFiles.length)return `<div class="wizardLocked">No Sunday report has been selected yet.</div><div class="wizardActions"><button class="btn gold" onclick="wizardChooseExcel()">Choose Excel files</button></div>`;
+
   const detected=detectedWorkbookBlocks.filter(b=>b.rep);
-  return `<div class="wizardImportBox"><div class="wizardImportFiles"><b>Selected Excel files</b>${selectedXlsxFiles.map(f=>`<div class="wizardImportFile">${escapeHtml(f.name)}</div>`).join('')}</div>${detected.length?`<div class="wizardImportDetected">${detected.map(b=>`<div><span>${escapeHtml(displayBranchName(b.rep.branch))} · ${escapeHtml(b.rep.date)}</span><b>${b.rep.rows.length} rows</b></div>`).join('')}</div>`:`<div class="wizardLocked">Reading the selected workbook…</div>`}<div class="wizardActions"><button class="btn alt" onclick="wizardChooseExcel()">Change files</button><button class="btn gold" ${detected.length?'':'disabled'} onclick="wizardImportSelected()">Import ${detected.length||''} report${detected.length===1?'':'s'}</button></div></div>`;
+  const selected=detected.filter(b=>b.selected);
+  const newCount=detected.filter(b=>b.importState==="new").length;
+  const existingCount=detected.filter(b=>b.importState==="identical").length;
+  const conflictCount=detected.filter(b=>b.importState==="conflict").length;
+
+  const summary=[
+    `${detected.length} weekly report${detected.length===1?"":"s"} detected`,
+    newCount?`${newCount} new`:"",
+    existingCount?`${existingCount} already imported`:"",
+    conflictCount?`${conflictCount} conflict${conflictCount===1?"":"s"}`:""
+  ].filter(Boolean).join(" · ");
+
+  const rows=detected.map(b=>{
+    const state=b.importState||"new";
+    const label=state==="identical"?"ALREADY IMPORTED":state==="conflict"?"CONFLICT":"NEW";
+    const cls=state==="identical"?"unknown":state==="conflict"?"warn":"ok";
+    const multi=b.sheetWeekCount>1?` · Week ${b.sheetWeekIndex}/${b.sheetWeekCount}`:"";
+    return `<div class="wizardDetectedRow ${state}">
+      <div><span>${escapeHtml(displayBranchName(b.rep.branch))} · ${escapeHtml(b.rep.date)}</span><small>${escapeHtml(b.file?.name||b.rep.originalFilename||"")} · ${b.rep.rows.length} rows${escapeHtml(multi)}</small></div>
+      <b class="reconStatus ${cls}">${label}</b>
+    </div>`;
+  }).join("");
+
+  return `<div class="wizardImportBox">
+    <div class="wizardImportFiles"><b>Selected Excel files</b>${selectedXlsxFiles.map(f=>`<div class="wizardImportFile">${escapeHtml(f.name)}</div>`).join('')}</div>
+    ${detected.length?`<div class="wizardImportSummary">${escapeHtml(summary)}</div><div class="wizardImportDetected">${rows}</div>`:`<div class="wizardLocked">Reading the selected workbook…</div>`}
+    <div class="wizardActions">
+      <button class="btn alt" onclick="wizardChooseExcel()">Change files</button>
+      <button class="btn gold" ${selected.length?'':'disabled'} onclick="wizardImportSelected()">Import ${selected.length} new report${selected.length===1?'':'s'}</button>
+    </div>
+  </div>`;
 }
 function wizardReportsForDate(date){
   ensureSundayArchive(); rebuildSundayReportChain();
@@ -9250,7 +9393,13 @@ function adjustmentDecisionForDate(adj,date){
 }
 function adjustmentCandidatesForDate(date){
   if(!date)return [];
-  return (db.adjustments||[]).filter(a=>(a.status==="pending"&&String(a.sourceDate||"")<String(date))||(a.status==="applied"&&a.appliedToDate===date));
+  reconcilePendingSundayCorrectionAdjustments();
+  return (db.adjustments||[]).filter(a=>
+    (a.status==="pending"&&Math.abs(Number(a.amount||0))>=0.005&&String(a.sourceDate||"")<String(date)) ||
+    (a.status==="applied"&&a.appliedToDate===date&&(
+      a.sourceType!=="sunday_report_correction" || sundayCorrectionIsActuallyApplied(a)
+    ))
+  );
 }
 function appliedAdjustmentsForDate(date,candidates=adjustmentCandidatesForDate(date)){return candidates.filter(a=>adjustmentDecisionForDate(a,date)==="apply");}
 function settlementAdjustmentSignature(adjs){return JSON.stringify((adjs||[]).map(a=>[a.id,+Number(a.amount||0).toFixed(2)]).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))));}
@@ -9327,7 +9476,7 @@ function renderFinancialWizard(state){
   }).join('');
   let adjustmentHtml="";
   const autoCorrections=(state.appliedAdjustments||[]).filter(a=>a.resolution==="next_sunday_auto");
-  if(allGreen&&autoCorrections.length){adjustmentHtml+=`<div class="adjustmentPanel"><h3>Correction from previous week</h3>${autoCorrections.map(a=>`<div class="adjustmentRow"><div class="adjustmentTop"><div><b>${escapeHtml(a.description||"Delivery docket correction")}</b><div class="wizardMinimal">From week ending ${escapeHtml(invoiceDateLabel(a.sourceDate))}</div></div><div class="adjustmentAmt ${Number(a.amount)>=0?'pos':'neg'}">${Number(a.amount)>=0?'+':''}${baht(a.amount)}</div></div><div class="adjustmentDecision">This correction is added automatically to this Sunday’s invoice.</div></div>`).join('')}</div>`;}
+  if(allGreen&&autoCorrections.length){adjustmentHtml+=`<div class="adjustmentPanel"><h3>Prior-period correction</h3>${autoCorrections.map(a=>`<div class="adjustmentRow"><div class="adjustmentTop"><div><b>${escapeHtml(a.description||"Delivery docket correction")}</b><div class="wizardMinimal">From week ending ${escapeHtml(invoiceDateLabel(a.sourceDate))}</div></div><div class="adjustmentAmt ${Number(a.amount)>=0?'pos':'neg'}">${Number(a.amount)>=0?'+':''}${baht(a.amount)}</div></div><div class="adjustmentDecision">This correction is added automatically to this Sunday’s invoice.</div></div>`).join('')}</div>`;}
   if(allGreen&&state.pendingForDecision?.length){
     adjustmentHtml+=`<div class="adjustmentPanel"><h3>Prior adjustment${state.pendingForDecision.length>1?'s':''}</h3><div class="adjustmentIntro">A previous invoice changed after it was saved. Choose what to do this Sunday. This does not change this week's trading figures.</div>${state.pendingForDecision.map(a=>{const d=adjustmentDecisionForDate(a,state.items[0]?.report?.date);return `<div class="adjustmentRow"><div class="adjustmentTop"><div><b>${escapeHtml(a.oldNumber||'Prior invoice')} adjustment</b><div class="wizardMinimal">From ${escapeHtml(invoiceDateLabel(a.sourceDate))}</div></div><div class="adjustmentAmt ${Number(a.amount)>=0?'pos':'neg'}">${Number(a.amount)>=0?'+':''}${baht(a.amount)}</div></div><div class="adjustmentActions"><button class="${d==='apply'?'selected':''}" onclick="setSundayAdjustmentDecision('${a.id}','apply')">Apply this Sunday</button><button class="${d==='defer'?'selected':''}" onclick="setSundayAdjustmentDecision('${a.id}','defer')">Leave for later</button></div><div class="adjustmentDecision">${d==='apply'?'Will be shown separately on this invoice.':d==='defer'?'Will remain as an alert for a future Sunday.':'Choose one option before continuing.'}</div></div>`}).join('')}</div>`;
   }
@@ -9357,7 +9506,7 @@ function buildInvoiceCard(state,printMode=false){
   const branches=summary.branches.map(b=>`<div class="invoiceScreenBranch"><div class="name">${escapeHtml(displayBranchName(b.branch))}</div><div class="mini">Sales ${baht(b.sales)}</div><div class="amt">Due ${baht(b.payPin)}</div></div>`).join("");
   const breakdown=summary.branches.map(b=>`<div class="invoiceNum"><div class="k">${escapeHtml(b.branch)} cost + Pin profit</div><div class="v">${baht(b.cost)} + ${baht(b.pinProfit)}</div></div>`).join("");
   const savedNote=saved?.shopNote?`<div class="invoiceNoteSaved"><b>Note to shop:</b> ${escapeHtml(saved.shopNote)}</div>`:"";
-  return `<div class="invoiceCard compactInvoice"><div class="invoiceHead"><div><div class="invoiceTitle">Weekly Settlement Invoice</div><div class="wizardMinimal">Week ending ${escapeHtml(invoiceDateLabel(date))}</div></div><div class="invoiceMeta"><b>${escapeHtml(number)}</b><br>${saved?"Saved":"Draft"}</div></div><div class="invoiceFrom"><b>Issued by Yaowaret</b></div>${branches}<div class="invoiceTotal"><div class="k">Total payable to Pin</div><div class="v">${baht(saved?.totals?.payPin ?? (summary.combined.payPin + (state.appliedAdjustments||[]).reduce((n,a)=>n+Number(a.amount||0),0)))}</div></div>${((saved?.adjustmentsApplied||state.appliedAdjustments||[]).length)?`<div class="invoiceAdjustment"><b>Correction from previous week</b>${(saved?.adjustmentsApplied||state.appliedAdjustments||[]).map(a=>`<div class="invoiceAdjustmentLine"><span>${escapeHtml(a.description||('Week ending '+invoiceDateLabel(a.sourceDate)))}</span><b>${Number(a.amount)>=0?'+':''}${baht(a.amount)}</b></div>`).join('')}</div>`:''}<details class="invoiceScreenDetails"><summary>View invoice breakdown</summary><div class="invoiceNums" style="margin-top:7px">${breakdown}</div><div class="invoiceExplain">Normal profit split: BM 40% · Alix 30% · Pin 30%. Edibles: BM 40% · Alix 20% · Pin 40%.</div></details>${savedNote}<div class="invoiceState"><span class="${saved?'invoiceSaved':'invoiceDraft'}">${saved?'✓ INVOICE SAVED':'DRAFT — NOT SAVED'}</span><span class="wizardMinimal">Sales ${baht(summary.combined.sales)}</span></div></div>`;
+  return `<div class="invoiceCard compactInvoice"><div class="invoiceHead"><div><div class="invoiceTitle">Weekly Settlement Invoice</div><div class="wizardMinimal">Week ending ${escapeHtml(invoiceDateLabel(date))}</div></div><div class="invoiceMeta"><b>${escapeHtml(number)}</b><br>${saved?"Saved":"Draft"}</div></div><div class="invoiceFrom"><b>Issued by Yaowaret</b></div>${branches}<div class="invoiceTotal"><div class="k">Total payable to Pin</div><div class="v">${baht(saved?.totals?.payPin ?? (summary.combined.payPin + (state.appliedAdjustments||[]).reduce((n,a)=>n+Number(a.amount||0),0)))}</div></div>${((saved?.adjustmentsApplied||state.appliedAdjustments||[]).length)?`<div class="invoiceAdjustment"><b>Prior-period correction</b>${(saved?.adjustmentsApplied||state.appliedAdjustments||[]).map(a=>`<div class="invoiceAdjustmentLine"><span>${escapeHtml(a.description||('Week ending '+invoiceDateLabel(a.sourceDate)))}</span><b>${Number(a.amount)>=0?'+':''}${baht(a.amount)}</b></div>`).join('')}</div>`:''}<details class="invoiceScreenDetails"><summary>View invoice breakdown</summary><div class="invoiceNums" style="margin-top:7px">${breakdown}</div><div class="invoiceExplain">Normal profit split: BM 40% · Alix 30% · Pin 30%. Edibles: BM 40% · Alix 20% · Pin 40%.</div></details>${savedNote}<div class="invoiceState"><span class="${saved?'invoiceSaved':'invoiceDraft'}">${saved?'✓ INVOICE SAVED':'DRAFT — NOT SAVED'}</span><span class="wizardMinimal">Sales ${baht(summary.combined.sales)}</span></div></div>`;
 }
 function latestInvoiceForDate(date){
   return [...(db.invoices||[])].filter(x=>x&&x.reportDate===date&&x.status!=="void").sort((a,b)=>Number(b.version||1)-Number(a.version||1)||String(b.createdAt||"").localeCompare(String(a.createdAt||"")))[0]||null;
@@ -10037,7 +10186,8 @@ function renderDashboardAlerts(){
     if(c.choice==="next_sunday")alerts.push(`<div class="dashboardAlert info"><div class="dashboardAlertTitle">Correction queued for next Sunday</div><div class="dashboardAlertText">${escapeHtml(label)} has a saved correction. It will be carried into the next Sunday billing cycle automatically once the edited week reconciles. The existing invoice stays unchanged.</div></div>`);
     else alerts.push(`<div class="dashboardAlert"><div class="dashboardAlertTitle">⚠ Docket correction waiting</div><div class="dashboardAlertText">${escapeHtml(label)} has a correction waiting for the edited week to reconcile. Your saved choice will apply automatically afterwards.</div></div>`);
   });
-  const pending=(db.adjustments||[]).filter(a=>a.status==="pending"&&a.resolution!=="next_sunday_auto");
+  reconcilePendingSundayCorrectionAdjustments();
+  const pending=(db.adjustments||[]).filter(a=>a.status==="pending"&&Math.abs(Number(a.amount||0))>=0.005&&a.resolution!=="next_sunday_auto");
   if(pending.length){const total=pending.reduce((n,a)=>n+Number(a.amount||0),0);alerts.push(`<div class="dashboardAlert info"><div class="dashboardAlertTitle">Adjustment waiting</div><div class="dashboardAlertText">${pending.length} unresolved adjustment${pending.length>1?'s':''} (${total>=0?'+':''}${baht(total)}) is waiting for Pin's decision. It will be offered automatically in the next eligible Sunday workflow.</div><button class="btn" onclick="switchTab('history');document.getElementById('recordsType').value='invoice';renderHistory()">Open Records</button></div>`);}
   box.innerHTML=alerts.join("");box.style.display=alerts.length?"block":"none";
 }
@@ -10213,7 +10363,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.35-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.37-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -10543,7 +10693,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.35-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.37-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -10613,7 +10763,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.35-dev',
+        app_version:'0.10.37-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,

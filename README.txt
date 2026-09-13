@@ -1,41 +1,47 @@
-MAGIC DRAGON PIN v0.10.35 DEV — CORRECTION EQUILIBRIUM
+MAGIC DRAGON PIN v0.10.37 DEV — SUNDAY READY AFTER RESTORE
 
-Built from v0.10.34 after on-device testing exposed a second-order correction bug.
+Built directly from v0.10.36.
 
-BUG FIXED
-Sequence:
-1. Historical paid Sunday data was corrected +฿87.
-2. The app correctly queued +฿87 for the next Sunday invoice.
-3. The source was then restored to its original values.
-4. v0.10.34 created a second -฿87 adjustment instead of cancelling the unapplied +฿87.
+INTENDED TEST PROCEDURE
+1. Deploy v0.10.37.
+2. Restore a known-good Full Backup from BEFORE today's experimental Sunday-correction testing and BEFORE the 13 Sep Sunday import.
+3. Confirm the restored historical data looks correct.
+4. Import the real 13 Sep shop files fresh.
+5. Walk through Import -> Reconcile -> Financial -> Invoice.
+6. Do not save/send/pay the invoice until the figures are verified.
+7. After the Sunday cycle is proven, create a new Full Backup.
 
-v0.10.35 NETTING RULE
-For the same branch + source Sunday + affected invoice:
-- unapplied Sunday-source corrections are always netted together;
-- +฿87 followed by -฿87 = ฿0, both are closed as EQUILIBRIUM RESTORED;
-- nothing carries forward;
-- the original paid invoice returns to normal PAID state;
-- the correction alert disappears because there is no active financial balance;
-- the audit trail remains in the stored correction history.
+FIXES INCLUDED
 
-PARTIAL EXAMPLE
-+฿87 followed by -฿30 before either is applied = one active +฿57 carry-forward, not two separate adjustments.
+A. SUNDAY WORKFLOW PREVIEW
+The simplified Sunday Wizard now uses the same classification as the full import screen:
+- NEW
+- ALREADY IMPORTED
+- CONFLICT
+The Import button counts only selected/new blocks.
+A workbook that contains three old Lamai weeks plus one new Lamai week will no longer misleadingly say Import 4 reports.
 
-IMPORTANT HISTORY RULE
-If the earlier +฿87 has already been APPLIED to a later invoice, it is historical and is never erased.
-A later -฿87 remains a real new correction and carries forward normally.
+B. SUGGESTED DELIVERY DASHBOARD
+Dashboard shows only the latest Sunday suggestion group.
+Older unsent suggested dockets remain preserved in Delivery Records/history, but they are no longer mixed with today's suggested dockets on the Dashboard.
 
-HISTORICAL IMPORT STATE
-Replacing a historical Sunday report no longer reopens that old date as the active Sunday workflow merely because it was re-imported.
+C. CORRECTION WORDING
+"Correction from previous week" is replaced with "Prior-period correction", because an adjustment can originate several weeks earlier.
 
-AUTOMATIC REPAIR
-On startup v0.10.35 reconciles existing unapplied Sunday correction groups.
-The current test state (+฿87 and -฿87) should therefore cancel automatically after deployment.
-It also clears a stale historical active-Sunday pointer when a newer Sunday cycle is already recorded complete.
+D. MONEY DISPLAY
+Fractional baht always display two decimals:
+฿8,136.50
+Whole-baht values remain compact:
+฿1,020
 
-TEST
-1. Deploy v0.10.35.
-2. Dashboard should no longer show a -฿87 correction queued for the restored 23 Aug source.
-3. The affected paid invoice should return to PAID with no active correction warning.
-4. Sunday Status should not be reopened to 23 Aug merely because of the historical replacement.
-5. Settings -> DEV Self-Test -> Sunday correction equilibrium should PASS.
+E. CORRECTION-CHAIN SAFETY
+All v0.10.36 correction-chain fixes are retained:
+- unsettled source corrections net by branch + source Sunday date
+- internal status alone does not make a correction immutable
+- only a saved invoice containing the adjustment makes it applied history
+- stock-only zero-financial corrections create no invoice action
+
+WHY RESTORE FIRST
+Today's DEV test sequence intentionally modified historical Sunday data and created/saved experimental correction states.
+A known-good pre-test Full Backup is the cleanest reset.
+Restoring first means v0.10.37 gets a clean database and the real 13 Sep reports can be tested as a genuine first import.
