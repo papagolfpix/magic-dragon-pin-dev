@@ -3988,6 +3988,132 @@ body.deliveryMode .deliverySaveActions .btn{min-height:36px!important;height:36p
   body.deliveryMode #deliveryEntryTools .deliveryAddRow{grid-template-columns:82px minmax(104px,140px)!important}
 }
 
+
+/* v0.10.25 DEV — delivery entry usability rebuild */
+body.deliveryMode #deliveryEntryTools{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.45fr) minmax(0,1fr) 68px!important;
+  gap:5px!important;
+  align-items:end!important;
+}
+body.deliveryMode #deliveryEntryTools .deliveryPrimaryProduct{grid-column:1!important;grid-row:auto!important}
+body.deliveryMode #deliveryEntryTools .deliveryVariantField{grid-column:2!important;grid-row:auto!important}
+body.deliveryMode #deliveryEntryTools .deliveryQtyField{grid-column:3!important;grid-row:auto!important;min-width:0!important;margin:0!important}
+body.deliveryMode #deliveryEntryTools .deliverySearch,
+body.deliveryMode #deliveryEntryTools .deliveryAlphabetWrap,
+body.deliveryMode #deliveryEntryTools .compactHelp{display:none!important}
+body.deliveryMode #deliveryEntryTools .restockContextBar{grid-column:1/-1!important}
+body.deliveryMode #deliveryEntryTools .deliveryActionRow{
+  grid-column:1/-1!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr)!important;
+  gap:6px!important;
+  margin-top:1px!important;
+}
+body.deliveryMode #deliveryEntryTools .deliveryActionRow .btn{
+  width:100%!important;
+  min-width:0!important;
+  min-height:38px!important;
+  height:38px!important;
+  padding:5px 8px!important;
+  font-size:13px!important;
+  white-space:nowrap!important;
+}
+body.deliveryMode:not(.deliveryEditMode) .deliveryNoteToggle{display:none!important}
+body.deliveryMode .deliveryMiddlePane{margin-top:5px!important;min-height:72px!important}
+body.deliveryMode .deliveryLinesWrap{
+  min-height:72px!important;
+  max-height:42dvh!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  border:1px solid #dfe3ea!important;
+  border-radius:10px!important;
+  background:#fff!important;
+}
+body.deliveryMode #deliveryCreateLinesTable table{width:100%!important;table-layout:fixed!important;min-width:0!important}
+body.deliveryMode #deliveryCreateLinesTable thead{display:table-header-group!important}
+body.deliveryMode #deliveryCreateLinesTable thead tr{display:table-row!important}
+body.deliveryMode #deliveryCreateLinesTable thead th{
+  display:table-cell!important;
+  padding:7px 6px!important;
+  font-size:11px!important;
+  line-height:1.05!important;
+  text-align:left!important;
+  background:#f7f8fa!important;
+  border-bottom:1px solid #e3e6eb!important;
+}
+body.deliveryMode #deliveryLines{display:table-row-group!important}
+body.deliveryMode #deliveryLines tr{
+  display:table-row!important;
+  min-height:0!important;
+  padding:0!important;
+  background:#fff!important;
+}
+body.deliveryMode #deliveryLines td,
+body.deliveryMode #deliveryLines td:first-child,
+body.deliveryMode #deliveryLines td:nth-child(2),
+body.deliveryMode #deliveryLines td:nth-child(3),
+body.deliveryMode #deliveryLines td:nth-child(4),
+body.deliveryMode #deliveryLines td:nth-child(5),
+body.deliveryMode #deliveryLines td:last-child{
+  display:table-cell!important;
+  grid-column:auto!important;
+  width:auto!important;
+  max-width:none!important;
+  padding:7px 6px!important;
+  border-bottom:1px solid #edf0f3!important;
+  vertical-align:middle!important;
+  box-sizing:border-box!important;
+  font-size:12px!important;
+}
+body.deliveryMode #deliveryLines td:first-child{font-weight:800!important;overflow-wrap:anywhere!important}
+body.deliveryMode #deliveryLines td:nth-child(2),
+body.deliveryMode #deliveryLines td:nth-child(3){text-align:center!important;white-space:nowrap!important}
+body.deliveryMode #deliveryLines td:last-child{text-align:right!important}
+body.deliveryMode #deliveryLines td:last-child .btn{
+  width:30px!important;min-width:30px!important;height:30px!important;min-height:30px!important;
+  padding:0!important;line-height:28px!important;font-size:17px!important;border-radius:9px!important;
+}
+body.deliveryMode .deliveryBottomPane{
+  position:static!important;
+  background:transparent!important;
+  padding:0!important;
+  box-shadow:none!important;
+}
+body.deliveryMode .deliveryBottomPane .totalbar{margin:4px 0 64px!important;padding:4px 2px!important;min-height:24px!important;font-size:12px!important}
+body.deliveryMode .deliverySaveActions{margin:0!important;display:block!important}
+body.deliveryMode #clearDelivery{
+  display:block!important;
+  position:fixed!important;
+  left:14px!important;
+  right:14px!important;
+  bottom:max(8px,env(safe-area-inset-bottom))!important;
+  width:auto!important;
+  max-width:680px!important;
+  margin:0 auto!important;
+  z-index:240!important;
+  min-height:44px!important;
+  height:44px!important;
+  padding:7px 12px!important;
+  font-size:14px!important;
+  font-weight:850!important;
+  background:#fff!important;
+  box-shadow:0 5px 22px rgba(16,24,40,.18)!important;
+}
+body.deliveryMode.deliveryEditMode #cancelEditDelivery{margin-bottom:6px!important;width:100%!important}
+body.deliveryMode #docket{padding-bottom:max(86px,calc(70px + env(safe-area-inset-bottom)))!important}
+@media(max-width:430px){
+  body.deliveryMode #deliveryEntryTools{grid-template-columns:minmax(0,1.5fr) minmax(0,1.05fr) 62px!important;gap:4px!important}
+  body.deliveryMode #deliveryEntryTools .deliveryActionRow{grid-template-columns:.72fr 1.28fr!important;gap:5px!important}
+  body.deliveryMode #deliveryEntryTools .deliveryActionRow .btn{font-size:12px!important;padding:4px 5px!important}
+  body.deliveryMode #deliveryCreateLinesTable thead th{font-size:10px!important;padding:6px 4px!important}
+  body.deliveryMode #deliveryLines td,body.deliveryMode #deliveryLines td:first-child{font-size:11.5px!important;padding:6px 4px!important}
+}
+@media(max-width:360px){
+  body.deliveryMode #deliveryEntryTools{grid-template-columns:minmax(0,1.45fr) minmax(0,1fr) 58px!important}
+  body.deliveryMode #deliveryEntryTools .deliveryActionRow .btn{font-size:11px!important}
+}
+
 </style>
 </head>
 <body>
@@ -4002,7 +4128,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.24 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.25 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -4199,6 +4325,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
         <div id="deliveryEntryTools" class="deliveryEntryTools">
           <div class="field deliveryProductField deliveryPrimaryProduct"><label>Product</label><select id="delProduct"></select></div>
           <div class="field deliveryVariantField"><label>Variant</label><select id="delVariant" disabled><option value="">Choose variant...</option></select></div>
+          <div class="field deliveryQtyField"><label>Qty</label><input id="delQty" class="keyboardSafeInput" type="number" min="1" placeholder="Qty" inputmode="numeric" enterkeyhint="done"></div>
           <div id="restockContextBar" class="restockContextBar" style="display:none">
             <span id="restockContextText">Sunday restock list</span>
             <button id="restockContextToggle" type="button" class="restockContextToggle" onclick="toggleRestockProductScope()">Show all products</button>
@@ -4211,9 +4338,9 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
             </div>
           </div>
           <details class="compactHelp"><summary>ⓘ Delivery entry help</summary><div class="small">Choose the product family first, then explicitly choose the sellable variant. No variant is selected automatically.</div></details>
-          <div class="row deliveryAddRow">
-            <div class="field deliveryQtyField"><label>Qty</label><input id="delQty" class="keyboardSafeInput" type="number" min="1" placeholder="Qty" inputmode="numeric" enterkeyhint="done"></div>
+          <div class="deliveryActionRow">
             <button class="btn gold deliveryAddButton" id="addDeliveryLine">Add line</button>
+            <button class="btn deliveryTopSaveButton" id="saveDelivery">Save Delivery + Create Docket</button>
           </div>
         </div>
         <details class="deliveryNoteToggle" id="deliveryNoteToggle"><summary>+ Delivery note</summary><div class="field"><input id="delNote" placeholder="e.g. Sunday restock / extra gummies"></div></details>
@@ -4222,8 +4349,8 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
         <div id="deliveryEditLines" class="deliveryEditLines" style="display:none"></div>
         <div id="deliveryCreateLinesTable" class="tablewrap deliveryLinesWrap">
           <table>
-            <colgroup><col style="width:38%"><col style="width:10%"><col style="width:13%"><col style="width:13%"><col style="width:18%"><col style="width:8%"></colgroup>
-            <thead><tr><th>Product</th><th>Qty</th><th>Cost</th><th>Retail</th><th>Cost total</th><th></th></tr></thead><tbody id="deliveryLines"></tbody>
+            <colgroup><col style="width:58%"><col style="width:12%"><col style="width:20%"><col style="width:10%"></colgroup>
+            <thead><tr><th>Product</th><th>Qty</th><th>Cost</th><th aria-label="Remove"></th></tr></thead><tbody id="deliveryLines"></tbody>
           </table>
         </div>
       </div>
@@ -4233,7 +4360,6 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
         <div class="deliverySaveActions">
           <button class="btn alt" id="cancelEditDelivery" style="display:none">Cancel</button>
           <button class="btn alt" id="clearDelivery">Clear</button>
-          <button class="btn" id="saveDelivery">Save Delivery + Create Docket</button>
         </div>
       </div>
     </div>
@@ -5408,9 +5534,9 @@ function renderDelivery(){
    if(tb){
      tb.innerHTML=currentDelivery.map((l,i)=>({l,i})).reverse().map(({l,i})=>{
        const p=resolvedProductById(l.productId);
-       if(!p)return `<tr><td colspan="6">Unknown product record</td></tr>`;
+       if(!p)return `<tr><td colspan="4">Unknown product record</td></tr>`;
        const prices=validatedProductPrices(p)||{cost:0,retail:0};
-       return `<tr><td data-label="Product">${escapeHtml(p.name)}</td><td data-label="Qty">${Number(l.qty||0)}</td><td data-label="Cost">${baht(prices.cost)}</td><td data-label="Retail">${baht(prices.retail)}</td><td data-label="Cost total">${baht(Number(l.qty||0)*prices.cost)}</td><td data-label=""><button class="btn alt" onclick="removeDel(${i})">×</button></td></tr>`;
+       return `<tr><td data-label="Product">${escapeHtml(p.name)}</td><td data-label="Qty">${Number(l.qty||0)}</td><td data-label="Cost">${baht(prices.cost)}</td><td data-label=""><button class="btn alt" aria-label="Remove ${escapeHtmlAttr(p.name)}" onclick="removeDel(${i})">×</button></td></tr>`;
      }).join("");
    }
  }
@@ -6310,7 +6436,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.24-dev",
+    appVersion:"0.10.25-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -7906,7 +8032,7 @@ function calcImport(){
 
 
 const MD_DEV_RELEASE_META={
-  version:"0.10.24-dev",
+  version:"0.10.25-dev",
   checkpoint:"parent-variant-picker",
   proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery"],
   testing:["parent-variant-picker","dev-self-test"],
@@ -9222,7 +9348,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.24-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.25-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -9552,7 +9678,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.24-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.25-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -9622,7 +9748,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.24-dev',
+        app_version:'0.10.25-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,
