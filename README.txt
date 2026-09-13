@@ -1,49 +1,28 @@
-MAGIC DRAGON PIN v0.10.32 DEV — SUNDAY IMPORT INTEGRITY
+MAGIC DRAGON PIN v0.10.33 DEV — SUNDAY IMPORT SESSION RESET
 
-Built from the proven v0.10.31 DEV stable checkpoint.
+Built from v0.10.32 after the user validated multi-week detection and duplicate/conflict classification.
 
-WHAT THIS RELEASE DOES
-1. MULTI-WEEK WORKBOOK PREFLIGHT
-   The existing parser already detects multiple weekly stock blocks in one worksheet.
-   v0.10.32 makes that visible before import as Week block 1/N, 2/N, etc.
+FIX
+- Clear Selection now fully clears the transient Sunday import session: selected File objects, detected weekly blocks, checkboxes/preflight list, file input value, result messages and import-button count.
+- Close Import now also abandons/resets that transient import session. Reopening + Import Reports starts clean instead of resurrecting the previous workbook.
+- If the native file picker returns with no files selected, the same reset path is used so stale preflight data cannot remain.
+- One reusable resetSundayImportSession() helper owns this behavior for both controls.
 
-2. DUPLICATE / CONFLICT CLASSIFICATION
-   Each detected Sunday block is compared using:
-   branch + Sunday date + old-stock date + normalized row content.
-   States:
-   - NEW: selected by default.
-   - ALREADY IMPORTED: identical content exists; skipped by default and never creates a duplicate.
-   - CONFLICT: same branch/date exists but content differs; not selected by default and requires explicit replacement confirmation.
-
-3. SAFE REPLACEMENT
-   Replacing a conflicting report deletes the previous locally archived source file rather than leaving an orphan.
-   If saved invoices reference the same branch/date, the replacement warning says so explicitly.
-
-4. SAFER REPORT DELETE
-   Delete confirmation now states how many linked weekly records will be removed.
-   If saved invoice data references that branch/date, a second confirmation requires typing DELETE.
-   If the deleted date was the active Sunday cycle and no reports remain for that date, the active-cycle marker is cleared.
-
-5. DEV SELF-TEST
-   Added:
-   - duplicate branch/date Sunday report check
-   - Sunday archive ↔ weekly-record link integrity check
-
-REUSABLE LEGO BLOCK
-Sunday Import Integrity Guard:
-Preflight -> Block Detection -> Fingerprint -> NEW / IDENTICAL / CONFLICT -> Explicit Direction -> Linked Cleanup -> Self-Test
-
-IMPORTANT
-No invoice calculation, profit split, delivery calculation, Parent/Variant, cloud schema or Stage 2D behavior is changed.
+PRESERVED
+- v0.10.32 multi-week preflight (Week block 1/N etc.)
+- NEW / ALREADY IMPORTED / CONFLICT classification
+- identical duplicate protection
+- explicit conflict replacement
+- safe Sunday deletion
+- existing archive/history records are never touched by Clear Selection or Close Import
+- Parent/Variant, Delivery, Backup/Recovery and Stage 2D behavior unchanged
 
 TEST
-A. Upload a workbook containing multiple weeks on one sheet:
-   confirm each week appears as a separate detected block before import.
-B. Select an already-imported identical week:
-   it should say Already imported and create no duplicate.
-C. Upload a changed version of an existing branch/date:
-   it should show Conflict and require explicit replacement.
-D. Delete a non-invoiced Sunday report:
-   confirm linked weekly record is also removed.
-E. Run Settings -> DEV Self-Test:
-   Sunday duplicate keys should PASS.
+1. Choose the 3-week workbook and confirm all 3 blocks appear.
+2. Tap Clear Selection. The filename card, 3 blocks, checkboxes and result state should disappear/reset immediately.
+3. Tap Close Import, then + Import Reports. It should reopen blank with no previous workbook state.
+4. Choose the workbook again; detection should run fresh.
+5. Settings -> DEV Self-Test: Sunday import transient-state reset should PASS.
+
+LEGO BLOCK
+Transient Import Session Reset = one idempotent helper resets File input + in-memory selected files + parsed/detected blocks + preflight UI + action count + transient result UI, while preserving persisted archive/database records.
