@@ -1,4 +1,4 @@
-MAGIC DRAGON PIN v0.10.25 DEV — DELIVERY ENTRY USABILITY REBUILD
+MAGIC DRAGON PIN v0.10.26 DEV — DELIVERY ENTRY USABILITY REBUILD
 
 Built from v0.10.22 stability checkpoint.
 
@@ -47,16 +47,16 @@ NOT YET PRODUCTION-SAFE
 Parent -> Variant and DEV Self-Test remain DEV-only until device-tested.
 
 
-v0.10.25 DEV TEST RELEASE
+v0.10.26 DEV TEST RELEASE
 - Compacts Create Delivery substantially on iPhone: hides redundant module heading while creating, tightens title/meta/product/variant/search/A-Z/Qty spacing, and reduces line-item height.
 - Product and Variant now share one compact row on mobile.
 - Keeps Clear + Save Delivery on one compact sticky action row so Save remains reachable.
 - Restores real vertical scrolling in Create Delivery and adds bottom/safe-area scroll room for Safari.
 - Quantity uses the shared keyboard-safe focus Lego block and 16px mobile input text to prevent iOS focus zoom/jump.
-- Service-worker cache bumped to v0.10.25-dev for reliable DEV refresh.
+- Service-worker cache bumped to v0.10.26-dev for reliable DEV refresh.
 
 
-v0.10.25 DEV DELIVERY ENTRY USABILITY REBUILD
+v0.10.26 DEV DELIVERY ENTRY USABILITY REBUILD
 - Removed the visible A–Z picker and product-name filter from Create Delivery; the shorter product dropdown is now the primary selector.
 - Product, Variant and Qty now share one compact row.
 - Add line and Save Delivery + Create Docket now share the row directly underneath.
@@ -64,3 +64,12 @@ v0.10.25 DEV DELIVERY ENTRY USABILITY REBUILD
 - Corrected the added-products table so Product / Qty / Cost / remove controls align with their headers on iPhone.
 - Clear is fixed to the bottom of the viewport while creating/editing a delivery.
 - Existing data, pricing, variant logic, docket generation and edit workflow are preserved.
+
+
+v0.10.26 DEV DELIVERY FOOTER + PRICE VISIBILITY
+- Add line is now a full-width row directly below Product / Variant / Qty.
+- Save Delivery + Create Docket and Clear are fixed together at the bottom of the viewport, 50/50 width, so neither scrolls away.
+- Added-product table now shows Product / Qty / Cost / Sale / remove.
+- Sale price uses the same validated retail price already stored in the master catalogue and saved into the docket.
+- Added safe-area spacing so the fixed action row does not cover the product list on iPhone Safari.
+- Service-worker cache bumped to v0.10.26-dev.

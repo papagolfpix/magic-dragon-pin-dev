@@ -3989,7 +3989,7 @@ body.deliveryMode .deliverySaveActions .btn{min-height:36px!important;height:36p
 }
 
 
-/* v0.10.25 DEV — delivery entry usability rebuild */
+/* v0.10.26 DEV — delivery entry usability rebuild */
 body.deliveryMode #deliveryEntryTools{
   display:grid!important;
   grid-template-columns:minmax(0,1.45fr) minmax(0,1fr) 68px!important;
@@ -4114,6 +4114,62 @@ body.deliveryMode #docket{padding-bottom:max(86px,calc(70px + env(safe-area-inse
   body.deliveryMode #deliveryEntryTools .deliveryActionRow .btn{font-size:11px!important}
 }
 
+/* v0.10.26 DEV — delivery action/footer and sale-price refinement */
+body.deliveryMode #deliveryEntryTools .deliveryActionRow{
+  grid-column:1/-1!important;
+  display:block!important;
+  margin-top:1px!important;
+}
+body.deliveryMode #deliveryEntryTools .deliveryActionRow .deliveryAddButton{
+  width:100%!important;
+  display:block!important;
+  min-height:40px!important;
+  height:40px!important;
+  font-size:14px!important;
+}
+body.deliveryMode #deliveryLines td:nth-child(2),
+body.deliveryMode #deliveryLines td:nth-child(3),
+body.deliveryMode #deliveryLines td:nth-child(4){text-align:center!important;white-space:nowrap!important}
+body.deliveryMode .deliveryBottomPane .totalbar{margin:4px 0 72px!important}
+body.deliveryMode .deliverySaveActions{
+  position:fixed!important;
+  left:14px!important;
+  right:14px!important;
+  bottom:max(8px,env(safe-area-inset-bottom))!important;
+  z-index:245!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:6px!important;
+  margin:0 auto!important;
+  max-width:680px!important;
+  padding:0!important;
+}
+body.deliveryMode .deliverySaveActions #saveDelivery,
+body.deliveryMode .deliverySaveActions #clearDelivery{
+  position:static!important;
+  left:auto!important;right:auto!important;bottom:auto!important;
+  display:block!important;
+  width:100%!important;max-width:none!important;
+  min-height:46px!important;height:46px!important;
+  margin:0!important;
+  padding:7px 8px!important;
+  font-size:12.5px!important;
+  font-weight:850!important;
+  line-height:1.05!important;
+  white-space:normal!important;
+  box-shadow:0 5px 22px rgba(16,24,40,.18)!important;
+}
+body.deliveryMode .deliverySaveActions #saveDelivery{background:#0d1628!important;color:#fff!important}
+body.deliveryMode .deliverySaveActions #clearDelivery{background:#fff!important;color:#111827!important}
+body.deliveryMode .deliverySaveActions #cancelEditDelivery{grid-column:1/-1!important;width:100%!important;margin:0 0 4px!important}
+body.deliveryMode #docket{padding-bottom:max(94px,calc(78px + env(safe-area-inset-bottom)))!important}
+@media(max-width:430px){
+  body.deliveryMode #deliveryCreateLinesTable thead th{font-size:9.5px!important;padding:6px 3px!important}
+  body.deliveryMode #deliveryLines td,body.deliveryMode #deliveryLines td:first-child{font-size:11px!important;padding:6px 3px!important}
+  body.deliveryMode .deliverySaveActions{left:10px!important;right:10px!important;gap:5px!important}
+  body.deliveryMode .deliverySaveActions #saveDelivery,body.deliveryMode .deliverySaveActions #clearDelivery{font-size:11.5px!important}
+}
+
 </style>
 </head>
 <body>
@@ -4128,7 +4184,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.25 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.26 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -4340,7 +4396,6 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
           <details class="compactHelp"><summary>ⓘ Delivery entry help</summary><div class="small">Choose the product family first, then explicitly choose the sellable variant. No variant is selected automatically.</div></details>
           <div class="deliveryActionRow">
             <button class="btn gold deliveryAddButton" id="addDeliveryLine">Add line</button>
-            <button class="btn deliveryTopSaveButton" id="saveDelivery">Save Delivery + Create Docket</button>
           </div>
         </div>
         <details class="deliveryNoteToggle" id="deliveryNoteToggle"><summary>+ Delivery note</summary><div class="field"><input id="delNote" placeholder="e.g. Sunday restock / extra gummies"></div></details>
@@ -4349,8 +4404,8 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
         <div id="deliveryEditLines" class="deliveryEditLines" style="display:none"></div>
         <div id="deliveryCreateLinesTable" class="tablewrap deliveryLinesWrap">
           <table>
-            <colgroup><col style="width:58%"><col style="width:12%"><col style="width:20%"><col style="width:10%"></colgroup>
-            <thead><tr><th>Product</th><th>Qty</th><th>Cost</th><th aria-label="Remove"></th></tr></thead><tbody id="deliveryLines"></tbody>
+            <colgroup><col style="width:46%"><col style="width:10%"><col style="width:15%"><col style="width:17%"><col style="width:12%"></colgroup>
+            <thead><tr><th>Product</th><th>Qty</th><th>Cost</th><th>Sale</th><th aria-label="Remove"></th></tr></thead><tbody id="deliveryLines"></tbody>
           </table>
         </div>
       </div>
@@ -4358,8 +4413,9 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
         <div class="totalbar"><span>Total cost: <span id="deliveryTotal">฿0</span></span></div>
         <div id="deliveryCorrectionChoice" class="deliveryCorrectionChoice" style="display:none"></div>
         <div class="deliverySaveActions">
-          <button class="btn alt" id="cancelEditDelivery" style="display:none">Cancel</button>
+          <button class="btn" id="saveDelivery">Save Delivery + Create Docket</button>
           <button class="btn alt" id="clearDelivery">Clear</button>
+          <button class="btn alt" id="cancelEditDelivery" style="display:none">Cancel</button>
         </div>
       </div>
     </div>
@@ -5534,9 +5590,9 @@ function renderDelivery(){
    if(tb){
      tb.innerHTML=currentDelivery.map((l,i)=>({l,i})).reverse().map(({l,i})=>{
        const p=resolvedProductById(l.productId);
-       if(!p)return `<tr><td colspan="4">Unknown product record</td></tr>`;
+       if(!p)return `<tr><td colspan="5">Unknown product record</td></tr>`;
        const prices=validatedProductPrices(p)||{cost:0,retail:0};
-       return `<tr><td data-label="Product">${escapeHtml(p.name)}</td><td data-label="Qty">${Number(l.qty||0)}</td><td data-label="Cost">${baht(prices.cost)}</td><td data-label=""><button class="btn alt" aria-label="Remove ${escapeHtmlAttr(p.name)}" onclick="removeDel(${i})">×</button></td></tr>`;
+       return `<tr><td data-label="Product">${escapeHtml(p.name)}</td><td data-label="Qty">${Number(l.qty||0)}</td><td data-label="Cost">${baht(prices.cost)}</td><td data-label="Sale">${baht(prices.retail)}</td><td data-label=""><button class="btn alt" aria-label="Remove ${escapeHtmlAttr(p.name)}" onclick="removeDel(${i})">×</button></td></tr>`;
      }).join("");
    }
  }
@@ -6436,7 +6492,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.25-dev",
+    appVersion:"0.10.26-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -8032,7 +8088,7 @@ function calcImport(){
 
 
 const MD_DEV_RELEASE_META={
-  version:"0.10.25-dev",
+  version:"0.10.26-dev",
   checkpoint:"parent-variant-picker",
   proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery"],
   testing:["parent-variant-picker","dev-self-test"],
@@ -9348,7 +9404,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.25-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.26-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -9678,7 +9734,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.25-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.26-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -9748,7 +9804,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.25-dev',
+        app_version:'0.10.26-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,
