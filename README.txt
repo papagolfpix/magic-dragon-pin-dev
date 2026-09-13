@@ -1,41 +1,41 @@
-MAGIC DRAGON PIN v0.10.34 DEV — SUNDAY CORRECTION CARRY-FORWARD
+MAGIC DRAGON PIN v0.10.35 DEV — CORRECTION EQUILIBRIUM
 
-Built directly from the user-tested v0.10.33 DEV baseline.
+Built from v0.10.34 after on-device testing exposed a second-order correction bug.
 
-FOCUSED CHANGE ONLY
-This release fixes the accounting treatment and explanation when an already-imported Sunday report is replaced with different figures after an invoice has been issued/paid.
+BUG FIXED
+Sequence:
+1. Historical paid Sunday data was corrected +฿87.
+2. The app correctly queued +฿87 for the next Sunday invoice.
+3. The source was then restored to its original values.
+4. v0.10.34 created a second -฿87 adjustment instead of cancelling the unapplied +฿87.
 
-NEW BEHAVIOUR
-- Before replacement, the app calculates the exact financial delta between old and new Sunday data.
-- Delta uses the master product cost/retail and the correct standard/edible profit split.
-- The replacement confirmation shows:
-  Sales delta
-  Cost delta
-  Pin profit-share delta
-  Total delta payable to Pin
-- A source-correction audit record is stored.
-- If an affected invoice is already paid, that historic paid invoice remains unchanged.
-- The amount still payable to Pin is queued automatically as a prior-period adjustment for the next eligible Sunday invoice.
-- The invoice screen shows a clear breakdown instead of misleading "Verified difference +฿0".
-- Dashboard shows the queued correction with its actual money breakdown.
-- DEV Self-Test verifies the Sunday correction carry-forward helper path exists.
+v0.10.35 NETTING RULE
+For the same branch + source Sunday + affected invoice:
+- unapplied Sunday-source corrections are always netted together;
+- +฿87 followed by -฿87 = ฿0, both are closed as EQUILIBRIUM RESTORED;
+- nothing carries forward;
+- the original paid invoice returns to normal PAID state;
+- the correction alert disappears because there is no active financial balance;
+- the audit trail remains in the stored correction history.
 
-EXAMPLE
-One extra standard item sold at ฿150 with ฿60 cost:
-Sales +฿150
-Cost +฿60
-Profit +฿90
-Pin profit share +฿27
-Still payable to Pin +฿87
+PARTIAL EXAMPLE
++฿87 followed by -฿30 before either is applied = one active +฿57 carry-forward, not two separate adjustments.
 
-TEST PATH
-1. Start with an already-imported Sunday week.
-2. Upload a changed copy where one standard ฿150 / ฿60 product changes from 0 sold to 1 sold.
-3. Confirm the replacement warning shows Sales +฿150, Cost +฿60, Pin profit +฿27, Pay Pin +฿87.
-4. Accept replacement.
-5. Open the affected paid invoice.
-6. Confirm it says PAID · CORRECTION QUEUED and clearly shows +฿87 queued for next Sunday.
-7. Open the next eligible Sunday workflow and confirm +฿87 appears as an automatic previous-week correction.
+IMPORTANT HISTORY RULE
+If the earlier +฿87 has already been APPLIED to a later invoice, it is historical and is never erased.
+A later -฿87 remains a real new correction and carries forward normally.
 
-NO OTHER MAJOR WORKFLOW CHANGES
-Mapping-review cleanup remains the next roadmap block after this test passes.
+HISTORICAL IMPORT STATE
+Replacing a historical Sunday report no longer reopens that old date as the active Sunday workflow merely because it was re-imported.
+
+AUTOMATIC REPAIR
+On startup v0.10.35 reconciles existing unapplied Sunday correction groups.
+The current test state (+฿87 and -฿87) should therefore cancel automatically after deployment.
+It also clears a stale historical active-Sunday pointer when a newer Sunday cycle is already recorded complete.
+
+TEST
+1. Deploy v0.10.35.
+2. Dashboard should no longer show a -฿87 correction queued for the restored 23 Aug source.
+3. The affected paid invoice should return to PAID with no active correction warning.
+4. Sunday Status should not be reopened to 23 Aug merely because of the historical replacement.
+5. Settings -> DEV Self-Test -> Sunday correction equilibrium should PASS.

@@ -4411,7 +4411,7 @@ body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{grid
 }
 
 
-/* v0.10.34 DEV — Delivery Action Bar + Keyboard Focus Lego block.
+/* v0.10.35 DEV — Delivery Action Bar + Keyboard Focus Lego block.
    Authoritative footer: Cancel | Clear | Save, with Save always on the right.
    The entire bar is portalled to body so no delivery content can paint over it. */
 body.deliveryMode > .deliverySaveActions.deliveryActionPortal{
@@ -4495,12 +4495,12 @@ body.deliveryMode.deliveryLineEditFocus .deliveryConsistentRow.keyboardTarget{
   body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{font-size:11px!important;padding:5px 3px!important}
 }
 
-/* v0.10.34 — Sunday import integrity */
+/* v0.10.35 — Sunday import integrity */
 .detectedBlockNote{margin-top:3px;font-size:9px;line-height:1.3;color:#667085}
 .detectedBlock.detectedConflict{border-left:4px solid #b45309;background:#fffbeb}
 
 
-/* v0.10.34 — Sunday source correction clarity */
+/* v0.10.35 — Sunday source correction clarity */
 .sundayCorrectionNotice{background:#fff7ed!important;border-color:#fdba74!important;color:#7c2d12!important}
 .correctionGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
 .correctionGrid>div{background:#fff;border:1px solid #fed7aa;border-radius:10px;padding:8px 10px;display:flex;justify-content:space-between;gap:10px}
@@ -4525,7 +4525,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.34 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.35 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -5642,6 +5642,15 @@ function runDevSelfTests(){
      typeof sourceCorrectionAdjustmentForInvoice==="function";
    rows.push(devSelfTestRow("Sunday correction carry-forward",correctionHelpersOk?"pass":"fail",
      correctionHelpersOk?"Financial delta + paid-invoice carry-forward path is available.":"Sunday correction accounting helper is missing."));
+   const activeSourceCorrections=(db.adjustments||[]).filter(a=>a?.sourceType==="sunday_report_correction"&&a.status==="pending"&&!a.appliedToDate);
+   const sourceGroups=new Map();
+   activeSourceCorrections.forEach(a=>{
+     const k=sundayCorrectionGroupKey(a);
+     sourceGroups.set(k,(sourceGroups.get(k)||0)+1);
+   });
+   const unnettedGroups=[...sourceGroups.values()].filter(n=>n>1).length;
+   rows.push(devSelfTestRow("Sunday correction equilibrium",unnettedGroups?"fail":"pass",
+     unnettedGroups?`${unnettedGroups} source-correction group(s) still contain multiple unapplied adjustments.`:"Unapplied Sunday corrections are netted to one balance or cancel to zero."));
    const importResetOk=typeof resetSundayImportSession==="function" && !!document.getElementById("clearXlsxSelection") && !!document.getElementById("toggleSundayImport");
    rows.push(devSelfTestRow("Sunday import transient-state reset",importResetOk?"pass":"fail",
      importResetOk?"Clear Selection and Close Import share the full transient-session reset helper.":"Sunday import reset helper or controls are missing."));
@@ -6866,7 +6875,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.34-dev",
+    appVersion:"0.10.35-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -7320,9 +7329,88 @@ function findAffectedInvoiceForSundayCorrection(sourceDate){
 }
 function sourceCorrectionAdjustmentForInvoice(inv){
   if(!inv)return null;
-  return [...(db.adjustments||[])].filter(a=>a&&a.sourceType==="sunday_report_correction"&&a.oldInvoiceId===inv.id&&a.status!=="void")
+  return [...(db.adjustments||[])].filter(a=>a&&a.sourceType==="sunday_report_correction"&&a.oldInvoiceId===inv.id&&["pending","applied"].includes(a.status))
     .sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")))[0]||null;
 }
+
+function sundayCorrectionGroupKey(adj){
+  return [
+    canonicalBranchName(adj?.branch||""),
+    String(adj?.sourceDate||""),
+    String(adj?.oldInvoiceId||"")
+  ].join("::");
+}
+function aggregateSundayCorrectionBreakdown(items){
+  const out={unitsSold:0,sales:0,cost:0,profit:0,bm:0,alix:0,pinProfit:0,payPin:0};
+  (items||[]).forEach(a=>{
+    const b=a?.breakdown||{};
+    Object.keys(out).forEach(k=>out[k]+=Number(b[k]||0));
+  });
+  Object.keys(out).forEach(k=>out[k]=+out[k].toFixed(2));
+  return out;
+}
+function reconcilePendingSundayCorrectionAdjustments(){
+  if(!Array.isArray(db.adjustments))db.adjustments=[];
+  if(!Array.isArray(db.sundaySourceCorrections))db.sundaySourceCorrections=[];
+  const pending=db.adjustments.filter(a=>a&&a.sourceType==="sunday_report_correction"&&a.status==="pending"&&!a.appliedToDate);
+  const groups=new Map();
+  pending.forEach(a=>{
+    const key=sundayCorrectionGroupKey(a);
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push(a);
+  });
+  let changed=false;
+  groups.forEach(items=>{
+    if(items.length<2)return;
+    items.sort((a,b)=>String(a.createdAt||"").localeCompare(String(b.createdAt||"")));
+    const net=+items.reduce((n,a)=>n+Number(a.amount||0),0).toFixed(2);
+    const breakdown=aggregateSundayCorrectionBreakdown(items);
+    const latest=items.at(-1);
+    const now=new Date().toISOString();
+
+    items.slice(0,-1).forEach(a=>{
+      a.status="netted";
+      a.resolution="superseded_by_source_reconciliation";
+      a.nettedAt=now;
+      a.nettedInto=latest.id;
+      changed=true;
+    });
+
+    if(Math.abs(net)<0.005){
+      latest.status="netted";
+      latest.amount=0;
+      latest.resolution="equilibrium_restored";
+      latest.breakdown=breakdown;
+      latest.nettedAt=now;
+      latest.equilibriumRestored=true;
+      changed=true;
+
+      items.forEach(a=>{
+        const c=db.sundaySourceCorrections.find(x=>x.id===a.sourceCorrectionId);
+        if(c){
+          c.resolution="equilibrium_restored";
+          c.netAmount=0;
+          c.equilibriumRestoredAt=now;
+        }
+      });
+    }else{
+      latest.amount=net;
+      latest.breakdown=breakdown;
+      latest.netAmount=net;
+      latest.nettedFrom=items.slice(0,-1).map(a=>a.id);
+      latest.resolution=latest.resolution==="next_sunday_auto"?"next_sunday_auto":"carry_forward_pending";
+      changed=true;
+      const c=db.sundaySourceCorrections.find(x=>x.id===latest.sourceCorrectionId);
+      if(c){
+        c.netAmount=net;
+        c.resolution=latest.resolution;
+      }
+    }
+  });
+  if(changed)localStorage.setItem("mdpin-db",JSON.stringify(db));
+  return changed;
+}
+
 function registerSundayReportCorrection(oldRep,newRep){
   if(!oldRep||!newRep)return null;
   const calc=sundayReportCorrectionDelta(oldRep,newRep),d=calc.delta;
@@ -7364,6 +7452,15 @@ function registerSundayReportCorrection(oldRep,newRep){
     };
     db.adjustments.push(adj);
     correction.adjustmentId=adj.id;
+    reconcilePendingSundayCorrectionAdjustments();
+    const refreshed=db.adjustments.find(x=>x.id===adj.id);
+    if(refreshed?.resolution==="equilibrium_restored"){
+      correction.resolution="equilibrium_restored";
+      correction.netAmount=0;
+    }else if(refreshed){
+      correction.netAmount=Number(refreshed.amount||0);
+      correction.resolution=refreshed.resolution;
+    }
   }
   return correction;
 }
@@ -8573,6 +8670,7 @@ document.getElementById("importXlsx").onclick=async()=>{
   const file=block.file,rep=block.rep;
   try{
    const match=sundayImportMatchState(rep);
+   const wasConflictReplacement=match.state==="conflict";
    if(match.state==="identical"){
      results.insertAdjacentHTML("beforeend",`<div class="xlsxResult ok"><b>${escapeHtml(rep.archiveName)}</b><br><span class="small">Already imported with identical content — no duplicate created.</span></div>`);
      continue;
@@ -8613,14 +8711,17 @@ document.getElementById("importXlsx").onclick=async()=>{
    const id="X"+Date.now()+Math.random().toString(36).slice(2,7);
    const stored=await storeOriginalWorkbook(id,file,rep.archiveName);
    const record={...rep,id,importedAt:new Date().toISOString(),sourceStored:stored,mathErrors,reconciliation,reportFingerprint:sundayReportFingerprint(rep)};
-   db.sundayImports.push(record);reconReports.push(reconciliation);importedDates.push(rep.date);
+   db.sundayImports.push(record);reconReports.push(reconciliation);if(!wasConflictReplacement)importedDates.push(rep.date);
    const weeklyRows=rep.rows.map(rr=>{const pm=canonicalProductMatchRow(rr),p=pm.product;return {productId:p?.id||null,sourceProductName:rr.product,opening:rr.oldStock,delivered:rr.newDeliver||0,takeout:rr.takeOut||0,closing:rr.inStock,reportedSold:rr.sold,sellPrice:rr.sellPrice,cost:rr.cost,historyKnown:rr.oldStock!=null,source:"Excel"}});
    db.weeks.push({id:"W"+Date.now()+Math.random().toString(36).slice(2,5),branch:rep.branch,date:rep.date,source:"Excel Sunday import",sourceArchiveId:id,rows:weeklyRows,totals:{sales:rep.rows.reduce((s,r)=>s+(r.totalSales||0),0),cost:rep.rows.reduce((s,r)=>s+(r.totalCost||0),0),profit:rep.rows.reduce((s,r)=>s+(r.totalProfit||0),0),bm:rep.rows.reduce((s,r)=>s+(r.bmShare||0),0),alix:rep.rows.reduce((s,r)=>s+(r.alixShare||0),0),pin:rep.rows.reduce((s,r)=>s+(r.pinShare||0),0)},importAudit:{type:"xlsx",archiveName:rep.archiveName,mathErrors,reconciliation,reportFingerprint:record.reportFingerprint}});
    save();
    const blockInfo=block.sheetWeekCount>1?` · block ${block.sheetWeekIndex}/${block.sheetWeekCount}`:"";
    const correctionResult=sourceCorrection&&sourceCorrection.adjustmentId?(()=>{
      const a=(db.adjustments||[]).find(x=>x.id===sourceCorrection.adjustmentId),d=sourceCorrection.delta||{};
-     return `<div class="small" style="margin-top:5px"><b>Correction recorded:</b> Sales ${d.sales>=0?"+":""}${baht(d.sales)} · Cost ${d.cost>=0?"+":""}${baht(d.cost)} · Pin profit ${d.pinProfit>=0?"+":""}${baht(d.pinProfit)} · <b>Pay Pin ${Number(a?.amount||0)>=0?"+":""}${baht(a?.amount||0)}</b>${sourceCorrection.affectedInvoicePaid?" · queued for next Sunday because the affected invoice is already paid":""}.</div>`;
+     if(a?.resolution==="equilibrium_restored"||sourceCorrection.resolution==="equilibrium_restored"){
+       return `<div class="small" style="margin-top:5px"><b>Equilibrium restored:</b> this change cancels the earlier unapplied correction. The paid invoice is valid again and <b>nothing will carry forward</b>.</div>`;
+     }
+     return `<div class="small" style="margin-top:5px"><b>Correction recorded:</b> Sales ${d.sales>=0?"+":""}${baht(d.sales)} · Cost ${d.cost>=0?"+":""}${baht(d.cost)} · Pin profit ${d.pinProfit>=0?"+":""}${baht(d.pinProfit)} · <b>Net Pay Pin ${Number(a?.amount||0)>=0?"+":""}${baht(a?.amount||0)}</b>${sourceCorrection.affectedInvoicePaid?" · queued for next Sunday because the affected invoice is already paid":""}.</div>`;
    })():"";
    results.insertAdjacentHTML("beforeend",`<div class="xlsxResult ${mathErrors.length?"warn":"ok"}"><b>${escapeHtml(rep.archiveName)}</b><br><span class="small">${escapeHtml(displayBranchName(rep.branch))} • ${escapeHtml(rep.date)} • ${rep.rows.length} product rows${escapeHtml(blockInfo)}</span>${correctionResult}</div>`);
   }catch(err){
@@ -8743,10 +8844,10 @@ function calcImport(){
 
 
 const MD_DEV_RELEASE_META={
-  version:"0.10.34-dev",
-  checkpoint:"sunday-correction-carry-forward",
-  proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery","parent-variant-picker","delivery-fixed-action-footer","editable-delivery-row","sunday-multiweek-preflight","duplicate-conflict-guard","safe-sunday-delete","import-session-reset"],
-  testing:["sunday-financial-delta","paid-invoice-carry-forward","source-correction-clarity","dev-self-test"],
+  version:"0.10.35-dev",
+  checkpoint:"sunday-correction-equilibrium",
+  proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery","parent-variant-picker","delivery-fixed-action-footer","editable-delivery-row","sunday-multiweek-preflight","duplicate-conflict-guard","safe-sunday-delete","import-session-reset","sunday-financial-delta","paid-invoice-carry-forward"],
+  testing:["sunday-correction-netting","equilibrium-restore","historical-replacement-no-reopen","dev-self-test"],
   devOnly:["supabase-reference-sync","stage2a","stage2b","stage2c","stage2d"]
 };
 
@@ -9024,6 +9125,18 @@ let sundayWizardTargetDate=null;
 const SUNDAY_STEPS=["Import","Reconcile","Financial","Invoice","Payment"];
 function ensureCompletedSundayCycles(){if(!Array.isArray(db.completedSundayCycles))db.completedSundayCycles=[];}
 function isSundayCycleComplete(date){ensureCompletedSundayCycles();return db.completedSundayCycles.some(x=>x&&x.date===date&&x.status==="complete");}
+function clearStaleHistoricalSundayCyclePointer(){
+  ensureCompletedSundayCycles();
+  const active=String(db.activeSundayCycleDate||"");
+  if(!active)return false;
+  const latest=[...(db.completedSundayCycles||[])].filter(x=>x?.status==="complete"&&x.date).sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0];
+  if(latest&&String(active)<String(latest.date)){
+    db.activeSundayCycleDate=null;
+    localStorage.setItem("mdpin-db",JSON.stringify(db));
+    return true;
+  }
+  return false;
+}
 function completeSundayCycle(state){
   const date=state?.items?.[0]?.report?.date;if(!date||!state.paymentSaved)return false;
   ensureCompletedSundayCycles();
@@ -10100,7 +10213,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.34-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.35-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -10430,7 +10543,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.34-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.35-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -10500,7 +10613,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.34-dev',
+        app_version:'0.10.35-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,
@@ -10532,7 +10645,7 @@ function mdCloudInit(){
   if(mdCloudSession?.access_token)mdCloudVerifyDatabase();else mdCloudTestProject();
 }
 
-cleanupDataIntegrity();refreshStoredReconciliations();renderImport();renderArchive();migrateLegacyDeliverySuggestions();bootstrapLatestSavedInvoiceSuggestions();renderAll();renderDashboardAlerts();refreshBaselineSnapshotStatus();mdCloudInit();
+cleanupDataIntegrity();refreshStoredReconciliations();reconcilePendingSundayCorrectionAdjustments();clearStaleHistoricalSundayCyclePointer();renderImport();renderArchive();migrateLegacyDeliverySuggestions();bootstrapLatestSavedInvoiceSuggestions();renderAll();renderDashboardAlerts();refreshBaselineSnapshotStatus();mdCloudInit();
 // v0.9.25 contextual Sunday help and compact selection controls
 const sundayHelpButton=document.getElementById("sundayHelpButton");
 const sundayHelp=document.getElementById("sundayHelp");
