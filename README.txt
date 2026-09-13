@@ -1,4 +1,4 @@
-MAGIC DRAGON PIN v0.10.26 DEV — DELIVERY ENTRY USABILITY REBUILD
+MAGIC DRAGON PIN v0.10.27 DEV — DELIVERY FOOTER HARDENING
 
 Built from v0.10.22 stability checkpoint.
 
@@ -73,3 +73,12 @@ v0.10.26 DEV DELIVERY FOOTER + PRICE VISIBILITY
 - Sale price uses the same validated retail price already stored in the master catalogue and saved into the docket.
 - Added safe-area spacing so the fixed action row does not cover the product list on iPhone Safari.
 - Service-worker cache bumped to v0.10.26-dev.
+
+
+v0.10.27 DEV — IPHONE DELIVERY FOOTER HARDENING
+- Root cause found: the delivery Save/Clear row was position:fixed inside .contentViewport, which uses CSS contain:layout paint and overflow:hidden. On iOS Safari that makes the fixed row use/clamp to the contained app shell and it can render below the visible browser viewport.
+- Save Delivery + Create Docket and Clear are now portalled directly under <body> while Create Delivery is active, so they are genuinely viewport-fixed and no longer clipped by the delivery scroll container.
+- Both buttons remain 50/50 on one row, with safe-area offsets for iPhone.
+- The portal is restored to its original DOM location when leaving Create Delivery so archive/other screens are unaffected.
+- Added extra bottom content clearance so the fixed row cannot cover the final product/total.
+- Service-worker cache bumped to v0.10.27-dev.
