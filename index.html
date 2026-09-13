@@ -3872,6 +3872,122 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 .devTestRow b{font-size:9px}.devTestRow.pass{border-left:4px solid #15803d}.devTestRow.warn{border-left:4px solid #b58a2a}.devTestRow.fail{border-left:4px solid #b42318}
 .devTestBadge{font-weight:950;min-width:42px}
 
+
+
+/* v0.10.24 DEV — compact delivery entry + iPhone keyboard/save-access hardening */
+body.deliveryMode #docket.active{
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:4px 0 max(76px,calc(60px + env(safe-area-inset-bottom)))!important;
+  scroll-padding-top:8px!important;
+  scroll-padding-bottom:max(92px,calc(76px + env(safe-area-inset-bottom)))!important;
+  overscroll-behavior-y:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+body.deliveryMode #docket>.deliveryModuleCard{
+  margin:0!important;
+  padding:6px!important;
+  border-radius:12px!important;
+  overflow:visible!important;
+}
+/* The archive heading/+New Delivery button is redundant while already creating a docket. */
+body.deliveryMode .deliveryModuleHead{display:none!important}
+body.deliveryMode #deliveryCreatePane>.deliveryWorkspace{
+  margin:0!important;
+  padding:2px 3px 4px!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  overflow:visible!important;
+}
+body.deliveryMode .deliveryTopPane{padding:0!important}
+body.deliveryMode .deliveryTitleRow{margin:0 0 3px!important;min-height:24px!important}
+body.deliveryMode .deliveryTitleRow h2{font-size:17px!important;line-height:1.1!important}
+body.deliveryMode .deliveryMetaRow{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:5px!important;
+  margin:0 0 3px!important;
+}
+body.deliveryMode .deliveryMetaRow .field{margin:0!important;gap:2px!important;min-width:0!important}
+body.deliveryMode #deliveryEntryTools{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.35fr) minmax(0,.9fr)!important;
+  column-gap:5px!important;
+  row-gap:3px!important;
+  align-items:end!important;
+}
+body.deliveryMode #deliveryEntryTools .deliveryPrimaryProduct,
+body.deliveryMode #deliveryEntryTools .deliveryVariantField{
+  width:auto!important;
+  min-width:0!important;
+  margin:0!important;
+}
+body.deliveryMode #deliveryEntryTools .deliveryPrimaryProduct{grid-column:1!important}
+body.deliveryMode #deliveryEntryTools .deliveryVariantField{grid-column:2!important}
+body.deliveryMode #deliveryEntryTools .restockContextBar,
+body.deliveryMode #deliveryEntryTools .deliverySearch,
+body.deliveryMode #deliveryEntryTools .deliveryAlphabetWrap,
+body.deliveryMode #deliveryEntryTools .compactHelp,
+body.deliveryMode #deliveryEntryTools .deliveryAddRow{grid-column:1/-1!important}
+body.deliveryMode #deliveryEntryTools .deliverySearch{margin:0!important}
+body.deliveryMode #deliveryEntryTools .deliveryAlphabetWrap{margin:0!important}
+body.deliveryMode .deliveryAlphabetScrubber{height:24px!important;min-height:24px!important;border-radius:7px!important}
+body.deliveryMode .deliveryAlphabetThumb{width:24px!important;height:24px!important;font-size:12px!important;border-radius:7px!important}
+body.deliveryMode #deliveryEntryTools .compactHelp{margin:0!important;min-height:18px!important}
+body.deliveryMode #deliveryEntryTools .compactHelp summary{font-size:10px!important;line-height:18px!important}
+body.deliveryMode #deliveryEntryTools .deliveryAddRow{
+  display:grid!important;
+  grid-template-columns:90px minmax(112px,150px)!important;
+  gap:6px!important;
+  margin:0!important;
+}
+body.deliveryMode #deliveryEntryTools .deliveryQtyField{min-width:0!important;max-width:none!important;width:auto!important;margin:0!important}
+body.deliveryMode #deliveryEntryTools .deliveryAddButton{width:100%!important;min-width:0!important;margin:0!important}
+body.deliveryMode .deliveryNoteToggle{margin:1px 0 0!important}
+body.deliveryMode .deliveryNoteToggle summary{font-size:10px!important;line-height:18px!important}
+body.deliveryMode .deliveryMiddlePane{margin-top:3px!important;min-height:44px!important}
+body.deliveryMode .deliveryLinesWrap{min-height:44px!important;max-height:24dvh!important}
+body.deliveryMode .deliveryBottomPane{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:30!important;
+  background:#fff!important;
+  padding:2px 0 max(3px,env(safe-area-inset-bottom))!important;
+  box-shadow:0 -5px 12px rgba(255,255,255,.96)!important;
+}
+body.deliveryMode .deliveryBottomPane .totalbar{margin:1px 0!important;padding:3px 0!important;min-height:24px!important;font-size:12px!important}
+body.deliveryMode .deliverySaveActions{margin-top:3px!important;gap:5px!important}
+body.deliveryMode:not(.deliveryEditMode) .deliverySaveActions{grid-template-columns:88px minmax(0,1fr)!important}
+body.deliveryMode:not(.deliveryEditMode) #clearDelivery{grid-column:1!important}
+body.deliveryMode:not(.deliveryEditMode) #saveDelivery{grid-column:2!important}
+body.deliveryMode .deliverySaveActions .btn{min-height:36px!important;height:36px!important;padding:5px 8px!important;font-size:11.5px!important}
+
+@media(max-width:650px){
+  body.deliveryMode #docket label{font-size:9px!important;line-height:1.05!important}
+  body.deliveryMode #docket input,
+  body.deliveryMode #docket select{
+    min-height:34px!important;
+    height:34px!important;
+    padding:4px 7px!important;
+    font-size:16px!important; /* prevents Safari focus zoom */
+    line-height:1.05!important;
+    border-radius:8px!important;
+  }
+  body.deliveryMode #deliveryEntryTools .deliveryPrimaryProduct select,
+  body.deliveryMode #deliveryEntryTools .deliveryVariantField select,
+  body.deliveryMode #deliveryEntryTools .deliverySearch input{font-size:16px!important}
+  body.deliveryMode #deliveryEntryTools .deliveryAddButton{min-height:34px!important;height:34px!important;padding:4px 10px!important;font-size:15px!important}
+  body.deliveryMode #deliveryLines tr{min-height:34px!important;padding:3px 0!important}
+  body.deliveryMode #deliveryLines td:first-child{font-size:12.5px!important}
+  body.deliveryMode #deliveryLines td:last-child .btn{width:28px!important;min-width:28px!important;height:28px!important;min-height:28px!important}
+}
+@media(max-width:380px){
+  body.deliveryMode #deliveryEntryTools{grid-template-columns:minmax(0,1.25fr) minmax(0,.85fr)!important}
+  body.deliveryMode #deliveryEntryTools .deliveryAddRow{grid-template-columns:82px minmax(104px,140px)!important}
+}
+
 </style>
 </head>
 <body>
@@ -3886,7 +4002,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.23 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.24 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -4096,7 +4212,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
           </div>
           <details class="compactHelp"><summary>ⓘ Delivery entry help</summary><div class="small">Choose the product family first, then explicitly choose the sellable variant. No variant is selected automatically.</div></details>
           <div class="row deliveryAddRow">
-            <div class="field deliveryQtyField"><label>Qty</label><input id="delQty" type="number" min="1" placeholder="Qty" inputmode="numeric"></div>
+            <div class="field deliveryQtyField"><label>Qty</label><input id="delQty" class="keyboardSafeInput" type="number" min="1" placeholder="Qty" inputmode="numeric" enterkeyhint="done"></div>
             <button class="btn gold deliveryAddButton" id="addDeliveryLine">Add line</button>
           </div>
         </div>
@@ -6194,7 +6310,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.23-dev",
+    appVersion:"0.10.24-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -7790,7 +7906,7 @@ function calcImport(){
 
 
 const MD_DEV_RELEASE_META={
-  version:"0.10.23-dev",
+  version:"0.10.24-dev",
   checkpoint:"parent-variant-picker",
   proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery"],
   testing:["parent-variant-picker","dev-self-test"],
@@ -9106,7 +9222,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.23-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.24-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -9436,7 +9552,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.23-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.24-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -9506,7 +9622,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.23-dev',
+        app_version:'0.10.24-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,

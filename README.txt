@@ -1,4 +1,4 @@
-MAGIC DRAGON PIN v0.10.23 DEV — PARENT PRODUCT -> VARIANT PICKER
+MAGIC DRAGON PIN v0.10.24 DEV — COMPACT DELIVERY + IPHONE KEYBOARD FIX
 
 Built from v0.10.22 stability checkpoint.
 
@@ -45,3 +45,12 @@ TEST PLAN
 
 NOT YET PRODUCTION-SAFE
 Parent -> Variant and DEV Self-Test remain DEV-only until device-tested.
+
+
+v0.10.24 DEV TEST RELEASE
+- Compacts Create Delivery substantially on iPhone: hides redundant module heading while creating, tightens title/meta/product/variant/search/A-Z/Qty spacing, and reduces line-item height.
+- Product and Variant now share one compact row on mobile.
+- Keeps Clear + Save Delivery on one compact sticky action row so Save remains reachable.
+- Restores real vertical scrolling in Create Delivery and adds bottom/safe-area scroll room for Safari.
+- Quantity uses the shared keyboard-safe focus Lego block and 16px mobile input text to prevent iOS focus zoom/jump.
+- Service-worker cache bumped to v0.10.24-dev for reliable DEV refresh.
