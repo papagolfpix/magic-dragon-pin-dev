@@ -3585,7 +3585,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 .cloudRefMetrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.cloudRefMetrics span{padding:8px;border:1px solid #e4e7ec;border-radius:10px;background:white;text-align:center}.cloudRefMetrics b{display:block;font-size:1.05rem}.cloudRefMetrics small{display:block;color:#667085;font-size:.72rem;margin-top:2px}.cloudStage2Actions{margin-top:9px;display:flex;gap:8px;flex-wrap:wrap}.cloudStage2Actions button{flex:1 1 190px}
 
 
-/* v0.10.21 — responsive A–Z delivery scrubber
+/* v0.10.23 — responsive A–Z delivery scrubber
    Visual letters and touch zones now share the same full-width grid. */
 .deliveryAlphabetScrubber{
   width:100%;
@@ -3625,7 +3625,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 }
 
 
-/* v0.10.21 — delivery picker visibility layout */
+/* v0.10.23 — delivery picker visibility layout */
 #deliveryEntryTools .deliveryPrimaryProduct{
   width:100%;
   margin-bottom:6px;
@@ -3639,7 +3639,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 }
 
 
-/* v0.10.21 — reusable reference sync decision / conflict guard */
+/* v0.10.23 — reusable reference sync decision / conflict guard */
 .cloudSyncDecision{display:grid;gap:6px;margin-top:8px;padding:9px 10px;border:1px solid #dbe1e9;border-radius:10px;background:#f8fafc}
 .cloudSyncDecision b{display:block;font-size:10.5px;color:#172033}
 .cloudSyncDecision small{display:block;margin-top:2px;font-size:8.5px;line-height:1.3;color:#667085}
@@ -3653,7 +3653,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 .cloudSyncDecision[data-state="cloud-empty"]{border-color:#e1cf9b;background:#fffaf0}
 
 
-/* v0.10.21 — permanent A–Z proportional scrubber
+/* v0.10.23 — permanent A–Z proportional scrubber
    26 visual cells share the exact same rendered geometry used by pointer mapping. */
 .deliveryAlphabetScrubber{
   width:100%;
@@ -3694,7 +3694,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 }
 
 
-/* v0.10.21 — responsive/UI hardening */
+/* v0.10.23 — responsive/UI hardening */
 
 /* Reusable proportional A–Z component — no page/container ID dependency. */
 .deliveryAlphabetWrap,
@@ -3793,7 +3793,7 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
 }
 
 
-/* v0.10.21 — Master Catalogue → Context Filter → Task-Specific Picker */
+/* v0.10.23 — Master Catalogue → Context Filter → Task-Specific Picker */
 .restockContextBar{
   display:flex;
   align-items:center;
@@ -3828,6 +3828,50 @@ body.deliveryEditMode .deliveryEditLineCard.keyboardTarget{
   .restockContextToggle{flex:0 0 auto}
 }
 
+
+/* v0.10.23 — stability checkpoint */
+.restockContextToggle{
+  min-height:32px;
+  touch-action:manipulation;
+}
+#deliveryEntryTools select,
+#deliveryEntryTools input,
+#deliveryEntryTools button{
+  box-sizing:border-box;
+}
+
+/* Production-candidate UI blocks must remain component-scoped. */
+.deliveryAlphabetScrubber,
+.deliveryAlphabetTrack,
+.deliveryAlphabetLetter,
+.restockContextBar,
+.restockContextToggle{
+  contain:layout style;
+}
+
+
+/* v0.10.23 — Parent Product -> explicit Variant -> resolved SKU */
+#deliveryEntryTools .deliveryVariantField{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  margin-bottom:6px;
+}
+#deliveryEntryTools .deliveryVariantField select{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+}
+#deliveryEntryTools .deliveryVariantField select:disabled{opacity:.65}
+
+/* DEV Self-Test Lego block */
+.devSelfTestPanel{display:grid;gap:8px;padding:10px;border:1px solid #dbe3ec;border-radius:10px;background:#f8fafc}
+.devSelfTestActions{display:flex;gap:7px;flex-wrap:wrap}
+.devSelfTestResults{display:grid;gap:5px}
+.devTestRow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;padding:7px 8px;border-radius:8px;background:#fff;border:1px solid #e4e7ec;font-size:9px}
+.devTestRow b{font-size:9px}.devTestRow.pass{border-left:4px solid #15803d}.devTestRow.warn{border-left:4px solid #b58a2a}.devTestRow.fail{border-left:4px solid #b42318}
+.devTestBadge{font-weight:950;min-width:42px}
+
 </style>
 </head>
 <body>
@@ -3842,7 +3886,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.21 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.23 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -4038,6 +4082,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
         <button id="deliveryEditAddToggle" class="deliveryEditAddToggle" type="button" style="display:none" onclick="toggleDeliveryEditAddTools()">＋ Add another product</button>
         <div id="deliveryEntryTools" class="deliveryEntryTools">
           <div class="field deliveryProductField deliveryPrimaryProduct"><label>Product</label><select id="delProduct"></select></div>
+          <div class="field deliveryVariantField"><label>Variant</label><select id="delVariant" disabled><option value="">Choose variant...</option></select></div>
           <div id="restockContextBar" class="restockContextBar" style="display:none">
             <span id="restockContextText">Sunday restock list</span>
             <button id="restockContextToggle" type="button" class="restockContextToggle" onclick="toggleRestockProductScope()">Show all products</button>
@@ -4049,7 +4094,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
               <div id="deliveryAlphabetThumb" class="deliveryAlphabetThumb" aria-hidden="true">A</div>
             </div>
           </div>
-          <details class="compactHelp"><summary>ⓘ Delivery entry help</summary><div class="small">The delivery list uses Pin's master product names. Enter only products being delivered.</div></details>
+          <details class="compactHelp"><summary>ⓘ Delivery entry help</summary><div class="small">Choose the product family first, then explicitly choose the sellable variant. No variant is selected automatically.</div></details>
           <div class="row deliveryAddRow">
             <div class="field deliveryQtyField"><label>Qty</label><input id="delQty" type="number" min="1" placeholder="Qty" inputmode="numeric"></div>
             <button class="btn gold deliveryAddButton" id="addDeliveryLine">Add line</button>
@@ -4237,6 +4282,18 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
               </div>
               <div class="cloudDevNote"><strong>Safety:</strong> Stage 2D preserves the Stage 2C preview/undo rules and adds a reusable conflict guard. It fingerprints local and cloud reference state, remembers the last common reference point, and warns before an action could overwrite changes made on the other side. Operational records are never included.</div>
             </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="settingGroup" id="devSelfTestDetails">
+        <summary>DEV Self-Test</summary>
+        <div class="settingGroupBody">
+          <div class="devSelfTestPanel">
+            <div class="small"><b>Papa Golf Lego testing block.</b> Runs local, non-destructive checks and gives a compact PASS / WARNING / FAIL report for common regression points.</div>
+            <div class="devSelfTestActions"><button class="btn alt" type="button" id="runDevSelfTest">Run DEV Self-Test</button></div>
+            <div id="devSelfTestSummary" class="small">Not run yet.</div>
+            <div id="devSelfTestResults" class="devSelfTestResults"></div>
           </div>
         </div>
       </details>
@@ -4790,7 +4847,7 @@ function canonicalDeliveryProducts(){
   return out;
 }
 
-/* CATALOGUE CONTEXT LEGO CONTRACT v0.10.21
+/* CATALOGUE CONTEXT LEGO CONTRACT v0.10.23
    Master Catalogue = what is available.
    Context Filter = what is relevant to the current task.
    Task-Specific Picker = the user-facing subset.
@@ -4798,7 +4855,7 @@ function canonicalDeliveryProducts(){
 */
 
 function branchProducts(branch){
-  // v0.10.21: branch availability comes from the shared active master catalogue.
+  // v0.10.23: branch availability comes from the shared active master catalogue.
   // Task-specific filtering belongs in a context layer, never in hard-coded branch exclusions.
   return canonicalDeliveryProducts();
 }
@@ -4853,7 +4910,10 @@ function renderRestockContextBar(contextIds=sundayRestockContextProductIds()){
   bar.style.display=active?"flex":"none";
   if(!active)return;
 
-  const count=contextIds?.size||0;
+  const parentKeys=new Set(
+    [...(contextIds||[])].map(id=>resolvedProductById(id)).filter(Boolean).map(p=>normalizeProductKey(productParentName(p)))
+  );
+  const count=parentKeys.size;
   if(textEl){
     textEl.textContent=restockShowAllProducts
       ? `Full catalogue · Sunday list has ${count} product${count===1?"":"s"}`
@@ -4870,41 +4930,160 @@ window.toggleRestockProductScope=()=>{
   fillProducts();
 };
 
-function fillProducts(){
- const s=document.getElementById("delProduct"), b=document.getElementById("delBranch").value,q=norm(document.getElementById("deliveryProductSearch")?.value||"");
- const previous=s.value;
- let products=branchProducts(b).sort((a,b)=>a.name.localeCompare(b.name, "en", {sensitivity:"base", numeric:true}));
 
- // Suggested Sunday restocks default to that branch/week's Sunday product context.
- // This is a view filter only: both branches still retain full catalogue access.
+function devSelfTestRow(name,status,detail){return {name,status,detail};}
+function runDevSelfTests(){
+ const rows=[];
+ try{
+   ensureProductFamilyStructure();
+   const active=canonicalDeliveryProducts();
+   const malformed=active.filter(p=>!productParentName(p)||!productVariantLabel(p));
+   rows.push(devSelfTestRow("Catalogue family metadata",malformed.length?"fail":"pass",
+     malformed.length?`${malformed.length} active SKU(s) missing parent/variant metadata.`:`${active.length} active SKU(s) have parent + variant metadata.`));
+
+   const seen=new Map(),duplicates=[];
+   active.forEach(p=>{
+     const key=`${normalizeProductKey(productParentName(p))}::${normalizeProductKey(productVariantLabel(p))}`;
+     if(seen.has(key))duplicates.push(`${productParentName(p)} · ${productVariantLabel(p)}`);
+     else seen.set(key,p.id);
+   });
+   rows.push(devSelfTestRow("Duplicate active variants",duplicates.length?"fail":"pass",
+     duplicates.length?`${duplicates.length} duplicate parent/variant combination(s): ${duplicates.slice(0,3).join(", ")}`:"No duplicate active parent/variant combinations."));
+
+   const bangrak=branchProducts("BM Bangrak").map(p=>p.id).sort();
+   const lamai=branchProducts("Lamai").map(p=>p.id).sort();
+   const sameBranches=JSON.stringify(bangrak)===JSON.stringify(lamai);
+   rows.push(devSelfTestRow("Branch catalogue parity",sameBranches?"pass":"fail",
+     sameBranches?`Bangrak and Lamai both expose ${bangrak.length} active SKU(s).`:`Bangrak ${bangrak.length} vs Lamai ${lamai.length} SKU(s).`));
+
+   const cells=document.querySelectorAll(".deliveryAlphabetLetter");
+   rows.push(devSelfTestRow("A-Z scrubber geometry",cells.length===26?"pass":"fail",
+     `${cells.length} visual letter cell(s) found; expected 26.`));
+
+   const parent=document.getElementById("delProduct");
+   const variant=document.getElementById("delVariant");
+   const pickerOk=!!parent&&!!variant&&!!variant.querySelector('option[value=""]');
+   rows.push(devSelfTestRow("Parent -> Variant picker",pickerOk?"pass":"fail",
+     pickerOk?"Parent and explicit-variant controls are present.":"Picker controls or empty variant placeholder missing."));
+
+   const explicit=variant ? variant.value==="" : false;
+   rows.push(devSelfTestRow("No automatic variant",explicit?"pass":"warn",
+     explicit?"Variant is currently unselected as required.":"A variant is currently selected; verify it was chosen manually."));
+
+   const contextOk=typeof sundayRestockContextProductIds==="function" && typeof window.toggleRestockProductScope==="function";
+   rows.push(devSelfTestRow("Sunday context filter",contextOk?"pass":"fail",
+     contextOk?"Sunday subset + Show all products controls are available.":"Sunday context-filter functions are missing."));
+
+   const keyboardOk=typeof keyboardSafeScrollOwner==="function";
+   rows.push(devSelfTestRow("Keyboard-safe form block",keyboardOk?"pass":"fail",
+     keyboardOk?"Shared mobile keyboard helper is present.":"Shared keyboard helper missing."));
+
+   const cloudOk=!!document.getElementById("cloudSyncDecision");
+   rows.push(devSelfTestRow("Stage 2D DEV guard",cloudOk?"pass":"warn",
+     cloudOk?"DEV reference-sync guard is present.":"Could not confirm Stage 2D guard."));
+ }catch(err){
+   rows.push(devSelfTestRow("Self-test runner","fail",String(err?.message||err)));
+ }
+
+ const box=document.getElementById("devSelfTestResults");
+ const summary=document.getElementById("devSelfTestSummary");
+ const counts={pass:0,warn:0,fail:0};
+ rows.forEach(r=>counts[r.status]=(counts[r.status]||0)+1);
+ if(box)box.innerHTML=rows.map(r=>`<div class="devTestRow ${r.status}"><span class="devTestBadge">${r.status.toUpperCase()}</span><div><b>${escapeHtml(r.name)}</b><div>${escapeHtml(r.detail)}</div></div></div>`).join("");
+ if(summary)summary.textContent=`${counts.pass} PASS · ${counts.warn} WARNING · ${counts.fail} FAIL`;
+ return {rows,counts};
+}
+window.runDevSelfTests=runDevSelfTests;
+
+function deliveryVariantSortRank(p){
+ const key=String(p?.variantKey||"").toLowerCase();
+ if(key==="1g")return 10;
+ if(key==="5g")return 20;
+ if(key==="preroll")return 30;
+ return 100;
+}
+function deliveryEligibleVariantProducts(){
+ const b=document.getElementById("delBranch")?.value||"BM Bangrak";
+ let products=branchProducts(b).slice();
+
  const restockContextIds=sundayRestockContextProductIds();
  if(restockContextIds && !restockShowAllProducts){
    products=products.filter(p=>restockContextIds.has(String(p.id)));
  }
  renderRestockContextBar(restockContextIds);
+ return products;
+}
+function deliveryParentGroups(){
+ const map=new Map();
+ deliveryEligibleVariantProducts().forEach(p=>{
+   const parent=productParentName(p)||p.name;
+   const key=normalizeProductKey(parent);
+   if(!key)return;
+   if(!map.has(key))map.set(key,{key,parentName:parent,variants:[]});
+   map.get(key).variants.push(p);
+ });
+ return [...map.values()].map(g=>{
+   g.variants.sort((a,b)=>{
+     const rank=deliveryVariantSortRank(a)-deliveryVariantSortRank(b);
+     if(rank)return rank;
+     return productVariantLabel(a).localeCompare(productVariantLabel(b),"en",{sensitivity:"base",numeric:true});
+   });
+   return g;
+ }).sort((a,b)=>a.parentName.localeCompare(b.parentName,"en",{sensitivity:"base",numeric:true}));
+}
+function fillDeliveryVariants({preserve=false}={}){
+ const parentSelect=document.getElementById("delProduct");
+ const variantSelect=document.getElementById("delVariant");
+ if(!parentSelect||!variantSelect)return;
 
- // Typed search keeps its existing narrowing behaviour within the current context.
- if(q){
-   products=products.filter(p=>norm(p.name).includes(q));
+ const previous=preserve?variantSelect.value:"";
+ const parentKey=parentSelect.value;
+ const group=deliveryParentGroups().find(g=>g.key===parentKey);
+
+ variantSelect.innerHTML='<option value="">Choose variant...</option>';
+ if(!group){
+   variantSelect.disabled=true;
+   return;
  }
+ group.variants.forEach(p=>{
+   const option=document.createElement("option");
+   option.value=p.id;
+   option.textContent=productVariantLabel(p)||p.name;
+   variantSelect.appendChild(option);
+ });
+ variantSelect.disabled=false;
 
- s.innerHTML=products.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
- if(!products.length){
+ if(preserve && previous && group.variants.some(p=>p.id===previous))variantSelect.value=previous;
+ else variantSelect.value="";
+}
+function fillProducts(){
+ const s=document.getElementById("delProduct");
+ const q=norm(document.getElementById("deliveryProductSearch")?.value||"");
+ if(!s)return;
+
+ const previous=s.value;
+ let groups=deliveryParentGroups();
+
+ if(q)groups=groups.filter(g=>norm(g.parentName).includes(q));
+
+ s.innerHTML=groups.map(g=>`<option value="${escapeHtmlAttr(g.key)}">${escapeHtml(g.parentName)}</option>`).join("");
+ if(!groups.length){
    s.innerHTML='<option value="">No matching product</option>';
+   fillDeliveryVariants();
    return;
  }
 
- // A–Z scrubber never filters the catalogue. It simply selects the
- // first product at or after the chosen alphabetical neighbourhood.
  if(!q && activeDeliveryLetter){
    const target=norm(activeDeliveryLetter);
-   let jumpIndex=products.findIndex(p=>norm(p.name).charAt(0)>=target);
-   if(jumpIndex<0)jumpIndex=products.length-1;
+   let jumpIndex=groups.findIndex(g=>norm(g.parentName).charAt(0)>=target);
+   if(jumpIndex<0)jumpIndex=groups.length-1;
    s.selectedIndex=jumpIndex;
+   fillDeliveryVariants();
    return;
  }
 
- if(products.some(p=>p.id===previous))s.value=previous;
+ if(groups.some(g=>g.key===previous))s.value=previous;
+ fillDeliveryVariants();
 }
 function normalizeDraftLines(lines){return (lines||[]).map(l=>({productId:String(l.productId||""),qty:Number(l.qty||0)})).filter(l=>l.productId&&l.qty>0);}
 function docketDraftChanged(){
@@ -5143,11 +5322,15 @@ window.editDeliveryLineProduct=(i,pid)=>{if(!editingDocketId&&!editingSuggestion
 window.editDeliveryLineQty=(i,val)=>{if(!editingDocketId&&!editingSuggestionId)return;const q=Number(val||0);if(q<=0){alert("Quantity must be greater than zero.");rerenderDeliveryStable();return;}currentDelivery[i].qty=q;rerenderDeliveryStable();};
 window.removeDel=i=>{currentDelivery.splice(i,1);rerenderDeliveryStable()}
 document.getElementById("delBranch").onchange=()=>{fillProducts();updateDocketEditResolutionUI();};
+document.getElementById("delProduct").onchange=()=>fillDeliveryVariants();
 document.getElementById("delDate").addEventListener("change",updateDocketEditResolutionUI);
 document.getElementById("delNote").addEventListener("input",updateDocketEditResolutionUI);
 document.getElementById("addDeliveryLine").onclick=()=>{
- const pid=document.getElementById("delProduct").value, qty=+document.getElementById("delQty").value||0;
- if(!pid)return alert("Choose a product first.");
+ const parentKey=document.getElementById("delProduct").value;
+ const pid=document.getElementById("delVariant").value;
+ const qty=+document.getElementById("delQty").value||0;
+ if(!parentKey)return alert("Choose a product first.");
+ if(!pid)return alert("Choose a variant before adding the line.");
  if(qty<=0)return alert("Enter a quantity greater than zero.");
  const p=resolvedProductById(pid);
  if(!p)return alert("That product could not be found in Pin's master catalogue. Please refresh the app and try again.");
@@ -5156,7 +5339,9 @@ document.getElementById("addDeliveryLine").onclick=()=>{
  // Persist any high-confidence repaired base prices so the catalogue and docket stay consistent.
  if(!(Number(p.cost)>0))p.cost=prices.cost;if(!(Number(p.retail)>0))p.retail=prices.retail;
  const old=currentDelivery.find(x=>x.productId===pid); if(old)old.qty+=qty;else currentDelivery.push({productId:pid,qty});
- const qtyInput=document.getElementById("delQty"); qtyInput.value=""; qtyInput.blur(); save(); renderDelivery();
+ const qtyInput=document.getElementById("delQty"); qtyInput.value=""; qtyInput.blur();
+ const variantSelect=document.getElementById("delVariant"); if(variantSelect)variantSelect.value="";
+ save(); renderDelivery();
  requestAnimationFrame(()=>{if(document.getElementById("deliveryCreatePane")?.style.display!=="none")document.getElementById("docket")?.scrollTo?.(0,0);});
 }
 document.getElementById("clearDelivery").onclick=()=>{currentDelivery=[];renderDelivery()}
@@ -5165,6 +5350,8 @@ function resetDeliveryEditor(){
  editingDocketId=null; editingSuggestionId=null; currentDelivery=[]; deliveryEditOriginalSnapshot=null; deliveryEditAffectedInvoiceId=null; deliveryEditResolutionChoice="";
  document.getElementById("delNote").value="";
  document.getElementById("delQty").value="";
+ const variantSelect=document.getElementById("delVariant");
+ if(variantSelect){variantSelect.innerHTML='<option value="">Choose variant...</option>';variantSelect.disabled=true;}
  document.getElementById("saveDelivery").textContent="Save Delivery + Create Docket";
  document.getElementById("cancelEditDelivery").style.display="none";
  document.getElementById("clearDelivery").textContent="Clear";
@@ -6007,7 +6194,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.21-dev",
+    appVersion:"0.10.23-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -7591,7 +7778,7 @@ function calcImport(){
 
 
 
-/* RESPONSIVE LEGO CONTRACT v0.10.21
+/* RESPONSIVE LEGO CONTRACT v0.10.23
    Proportional touch component:
    - component-scoped styling, never accidental page-ID coupling;
    - one rendered track;
@@ -7600,6 +7787,15 @@ function calcImport(){
    - optional thumb positioned from selected cell centre;
    - typography/padding/gaps never define hit geometry.
 */
+
+
+const MD_DEV_RELEASE_META={
+  version:"0.10.23-dev",
+  checkpoint:"parent-variant-picker",
+  proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery"],
+  testing:["parent-variant-picker","dev-self-test"],
+  devOnly:["supabase-reference-sync","stage2a","stage2b","stage2c","stage2d"]
+};
 
 const DELIVERY_ALPHA="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function deliveryAlphabetCells(){
@@ -7685,6 +7881,7 @@ function setupDeliveryAlphabetScrubber(){
   el.addEventListener("pointercancel",()=>{dragging=false});
 }
 setupDeliveryAlphabetScrubber();
+const devSelfTestButton=document.getElementById("runDevSelfTest");if(devSelfTestButton)devSelfTestButton.onclick=runDevSelfTests;
 
 const deliverySearch=document.getElementById("deliveryProductSearch");
 if(deliverySearch)deliverySearch.oninput=()=>{activeDeliveryLetter="";clearDeliveryAlphabetVisual();fillProducts();};
@@ -8909,7 +9106,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.21-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.23-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -8941,7 +9138,7 @@ document.getElementById("fillMasterCurrent").onclick=()=>renderMasterProductSetu
 document.getElementById("saveMasterProducts").onclick=applyMasterProductSetup;
 document.getElementById("resetData").onclick=()=>{if(confirm("Delete all local Magic Dragon Pin data on this browser?")){localStorage.removeItem("mdpin-db");location.reload()}}
 
-// v0.10.21 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
+// v0.10.23 DEV — Supabase Stage 2A reference snapshot. Operational records remain local; reference sync is manual and DEV-only.
 const MDPIN_SUPABASE_URL="https://bzgkeshxbnhnlrpdgbtb.supabase.co";
 const MDPIN_SUPABASE_PUBLISHABLE_KEY="sb_publishable_8EReyQFUFSe6SPHCBLhU7g_zp8j18_D";
 const MDPIN_SUPABASE_SESSION_KEY="mdpin-supabase-dev-session";
@@ -9239,7 +9436,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.21-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.23-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -9309,7 +9506,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.21-dev',
+        app_version:'0.10.23-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,

@@ -1,41 +1,47 @@
-MAGIC DRAGON PIN v0.10.21 DEV — CATALOGUE CONTEXT + RESTOCK FOCUS
+MAGIC DRAGON PIN v0.10.23 DEV — PARENT PRODUCT -> VARIANT PICKER
 
-Built from v0.10.20 DEV.
+Built from v0.10.22 stability checkpoint.
 
-BUSINESS RULE CORRECTION
-Both BM Bangrak and Lamai now have access to the same full active master catalogue.
-Removed the old hard-coded Lamai exclusions for:
-- 5g products
-- Gummy 4 Leaf
-- Cali Mousse 1g
+NEW DELIVERY FLOW
+- Product picker shows parent product names only.
+- Variant is a separate selector.
+- Variant always begins at "Choose variant..." and is never auto-selected.
+- Add Line refuses to continue until Pin explicitly chooses a variant.
+- The selected variant resolves to the existing SKU/product ID underneath.
+- Existing prices, barcodes, reconciliation, invoices and historical records continue to use the resolved SKU.
 
-RESTOCK CONTEXT
-When editing a Sunday-generated suggested delivery:
-- Product picker defaults to products present in that branch's Sunday report.
-- Products already on the suggested docket are always retained in the context.
-- Pin can tap Show all products to temporarily expose the full active catalogue.
-- Pin can switch back to Sunday list only.
+SUNDAY RESTOCK
+- Suggested delivery still defaults to the branch/week Sunday subset.
+- The subset now shows parent product families.
+- Variant choices are limited to eligible SKU variants inside that context.
+- Show all products exposes the complete active master catalogue.
+- Sunday context count now reports unique parent products rather than raw SKU rows.
 
-NORMAL DELIVERY
-Normal Create Delivery / ordinary docket editing uses the full active catalogue for either branch.
+PAPA GOLF LEGO BLOCK
+Parent Product -> Available Variants -> Resolved SKU -> Business Record
 
-REUSABLE LEGO CONTRACT
-MASTER CATALOGUE → CONTEXT FILTER → TASK-SPECIFIC PICKER
+DEV SELF-TEST
+Settings -> DEV Self-Test runs non-destructive checks for:
+- product family metadata
+- duplicate active variants
+- Bangrak/Lamai catalogue parity
+- A-Z 26-cell presence
+- Parent -> Variant picker structure
+- no automatic variant
+- Sunday context filter
+- keyboard-safe input helper
+- Stage 2D DEV guard
 
-Master Catalogue answers "what is available?"
-Context Filter answers "what is relevant here?"
-Task-Specific Picker shows the relevant subset without changing underlying availability.
+This is the first reusable Papa Golf testing/diagnostic Lego block.
 
-This pattern is reusable for branches, customers, seasonal menus, stock lists, audit tasks and other context-specific pickers.
+TEST PLAN
+1. Normal Delivery: select product; Variant must remain unselected.
+2. Tap Add Line without a variant: app must stop and ask for a variant.
+3. Select 1g / 5g / Pre-Roll as applicable, enter Qty and add.
+4. Confirm the correct resolved SKU is shown on the line.
+5. Sunday suggested delivery: verify product families are Sunday-context limited.
+6. Show all products: verify full catalogue and variants appear.
+7. Settings -> DEV Self-Test -> Run DEV Self-Test.
 
-NO OPERATIONAL CLOUD CHANGE
-Supabase Stage 2D remains DEV-only and unchanged.
-No delivery quantities, Sunday reports, invoices or payments are moved to cloud by this release.
-
-TEST
-1. Normal BM Bangrak delivery: confirm all active products are available.
-2. Normal Lamai delivery: confirm the same active products are available.
-3. Open a Sunday-generated suggested delivery.
-4. Product picker should default to that branch's Sunday-report products.
-5. Tap Show all products and confirm the full catalogue appears.
-6. Switch back to Sunday list only.
+NOT YET PRODUCTION-SAFE
+Parent -> Variant and DEV Self-Test remain DEV-only until device-tested.
