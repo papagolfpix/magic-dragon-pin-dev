@@ -1,109 +1,46 @@
-MAGIC DRAGON PIN v0.10.30 DEV — THREE-ACTION FOOTER + KEYBOARD FOCUS HARDENING
+MAGIC DRAGON PIN v0.10.31 DEV — STABLE CANDIDATE
 
-- Clear is fixed bottom-left; Save/Commit is fixed bottom-right on Create and Edit Delivery.
-- Create Delivery and Edit/Suggested Delivery now use the same editable line-item component.
-- Product and quantity can be corrected in-place after a line has been added.
-- iPhone keyboard handling now combines visualViewport awareness with the shared keyboard-safe scroll-owner routine so the focused quantity remains visible.
-- Delivery footer hides while the keyboard is open and returns when it closes.
-- Reusable UI regression rule: keyboard/focus visibility, safe-area footer, row/header alignment and action placement checked together.
+Built directly from the user-supplied v0.10.30 DEV THREE-ACTION KEYBOARD FIX baseline.
 
+PURPOSE
+This is a conservative consolidation/stable-candidate release. No large workflow feature is introduced.
 
-Built from v0.10.22 stability checkpoint.
+CHANGES
+- Standardized the Delivery action label to "Clear" in both Create and Edit/Suggested Delivery.
+- Kept the proven three-action fixed footer: Cancel | Clear | Save.
+- Kept the shared editable Delivery row component.
+- Kept the Parent Product -> explicit Variant -> resolved SKU flow.
+- Kept Sunday-context filtering + Show all products.
+- Kept the iPhone visualViewport / keyboard focus hardening.
+- Extended DEV Self-Test with a Delivery Clear-label consistency check.
+- Updated internal release metadata to mark this as the stable-candidate checkpoint.
 
-NEW DELIVERY FLOW
-- Product picker shows parent product names only.
-- Variant is a separate selector.
-- Variant always begins at "Choose variant..." and is never auto-selected.
-- Add Line refuses to continue until Pin explicitly chooses a variant.
-- The selected variant resolves to the existing SKU/product ID underneath.
-- Existing prices, barcodes, reconciliation, invoices and historical records continue to use the resolved SKU.
+CURRENT PROVEN DEV BLOCKS
+- Parent Product -> Variant -> Resolved SKU
+- Shared full catalogue for BM Bangrak and Lamai
+- Sunday restock context filter + Show all products
+- Editable Delivery rows
+- iPhone fixed viewport action footer
+- Keyboard-safe focus/scroll owner handling
+- Backup & Recovery
+- DEV Self-Test diagnostics
+- Stage 2D reference-cloud guard remains DEV-only
 
-SUNDAY RESTOCK
-- Suggested delivery still defaults to the branch/week Sunday subset.
-- The subset now shows parent product families.
-- Variant choices are limited to eligible SKU variants inside that context.
-- Show all products exposes the complete active master catalogue.
-- Sunday context count now reports unique parent products rather than raw SKU rows.
+SMOKE TEST
+1. Create Delivery: confirm footer reads Cancel | Clear | Save.
+2. Edit/Suggested Delivery: confirm footer also reads Cancel | Clear | Save.
+3. Add a line, edit Qty in place and verify the keyboard does not hide the active row.
+4. Parent Product -> choose Variant explicitly -> Add line.
+5. Suggested Sunday docket: verify context subset, then Show all products.
+6. Settings -> DEV Self-Test: run and confirm no FAIL results.
+7. Verify visible version reads v0.10.31 DEV.
 
-PAPA GOLF LEGO BLOCK
-Parent Product -> Available Variants -> Resolved SKU -> Business Record
+PIN PRODUCTION
+Do not copy this whole DEV build into Pin production. Continue selective backporting of only proven features.
 
-DEV SELF-TEST
-Settings -> DEV Self-Test runs non-destructive checks for:
-- product family metadata
-- duplicate active variants
-- Bangrak/Lamai catalogue parity
-- A-Z 26-cell presence
-- Parent -> Variant picker structure
-- no automatic variant
-- Sunday context filter
-- keyboard-safe input helper
-- Stage 2D DEV guard
-
-This is the first reusable Papa Golf testing/diagnostic Lego block.
-
-TEST PLAN
-1. Normal Delivery: select product; Variant must remain unselected.
-2. Tap Add Line without a variant: app must stop and ask for a variant.
-3. Select 1g / 5g / Pre-Roll as applicable, enter Qty and add.
-4. Confirm the correct resolved SKU is shown on the line.
-5. Sunday suggested delivery: verify product families are Sunday-context limited.
-6. Show all products: verify full catalogue and variants appear.
-7. Settings -> DEV Self-Test -> Run DEV Self-Test.
-
-NOT YET PRODUCTION-SAFE
-Parent -> Variant and DEV Self-Test remain DEV-only until device-tested.
-
-
-v0.10.26 DEV TEST RELEASE
-- Compacts Create Delivery substantially on iPhone: hides redundant module heading while creating, tightens title/meta/product/variant/search/A-Z/Qty spacing, and reduces line-item height.
-- Product and Variant now share one compact row on mobile.
-- Keeps Clear + Save Delivery on one compact sticky action row so Save remains reachable.
-- Restores real vertical scrolling in Create Delivery and adds bottom/safe-area scroll room for Safari.
-- Quantity uses the shared keyboard-safe focus Lego block and 16px mobile input text to prevent iOS focus zoom/jump.
-- Service-worker cache bumped to v0.10.26-dev for reliable DEV refresh.
-
-
-v0.10.26 DEV DELIVERY ENTRY USABILITY REBUILD
-- Removed the visible A–Z picker and product-name filter from Create Delivery; the shorter product dropdown is now the primary selector.
-- Product, Variant and Qty now share one compact row.
-- Add line and Save Delivery + Create Docket now share the row directly underneath.
-- Added-products list is a scrollable box below the entry controls.
-- Corrected the added-products table so Product / Qty / Cost / remove controls align with their headers on iPhone.
-- Clear is fixed to the bottom of the viewport while creating/editing a delivery.
-- Existing data, pricing, variant logic, docket generation and edit workflow are preserved.
-
-
-v0.10.26 DEV DELIVERY FOOTER + PRICE VISIBILITY
-- Add line is now a full-width row directly below Product / Variant / Qty.
-- Save Delivery + Create Docket and Clear are fixed together at the bottom of the viewport, 50/50 width, so neither scrolls away.
-- Added-product table now shows Product / Qty / Cost / Sale / remove.
-- Sale price uses the same validated retail price already stored in the master catalogue and saved into the docket.
-- Added safe-area spacing so the fixed action row does not cover the product list on iPhone Safari.
-- Service-worker cache bumped to v0.10.26-dev.
-
-
-v0.10.29 DEV — IPHONE DELIVERY FOOTER HARDENING
-- Root cause found: the delivery Save/Clear row was position:fixed inside .contentViewport, which uses CSS contain:layout paint and overflow:hidden. On iOS Safari that makes the fixed row use/clamp to the contained app shell and it can render below the visible browser viewport.
-- Save Delivery + Create Docket and Clear are now portalled directly under <body> while Create Delivery is active, so they are genuinely viewport-fixed and no longer clipped by the delivery scroll container.
-- Both buttons remain 50/50 on one row, with safe-area offsets for iPhone.
-- The portal is restored to its original DOM location when leaving Create Delivery so archive/other screens are unaffected.
-- Added extra bottom content clearance so the fixed row cannot cover the final product/total.
-- Service-worker cache bumped to v0.10.30-dev.
-
-
-v0.10.29 DEV — Delivery create/edit consistency
-- Save is always the left half and Clear the right half of the same fixed viewport footer in both Create Delivery and Edit Delivery.
-- Cancel edit is no longer part of the fixed footer; it remains an inline secondary action so the fixed footer is always exactly two equal buttons.
-- Edit Delivery line items now use the same Product / Qty / Cost / Sale / remove column language as Create Delivery. Product and quantity remain directly editable.
-- This becomes the reusable Delivery Row + Fixed Action Footer Lego-block pattern for future Magic Dragon/Papa Golf mobile screens.
-
-
-v0.10.30 DEV — DELIVERY ACTION + KEYBOARD REGRESSION HARDENING
-- Unified Create/Edit footer is now Cancel | Clear | Save, with Save always on the right.
-- Cancel is available on new dockets as well as edited/suggested dockets.
-- Cancel on an unsaved new docket confirms before discarding entered lines.
-- Removed the separate inline Cancel control that could appear behind the fixed footer.
-- Line-quantity keyboard mode now temporarily collapses the upper delivery-entry tools, giving the editable line list the visible iPhone viewport.
-- Focus logic now searches for the nearest real scroll owner instead of assuming the active section owns scrolling.
-- Footer, keyboard visibility, safe-area spacing, editable-row alignment and action placement are treated as reusable Lego-block regression checks.
+NEXT MAJOR DEV BLOCK AFTER STABLE CHECKPOINT
+Sunday import robustness:
+- multiple weeks on one sheet
+- duplicate-week conflict handling
+- safer report deletion/removal
+- cleaner new/changed-only mapping review

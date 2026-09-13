@@ -4411,7 +4411,7 @@ body.deliveryMode > .deliverySaveActions.deliveryActionPortal #saveDelivery{grid
 }
 
 
-/* v0.10.30 DEV — Delivery Action Bar + Keyboard Focus Lego block.
+/* v0.10.31 DEV — Delivery Action Bar + Keyboard Focus Lego block.
    Authoritative footer: Cancel | Clear | Save, with Save always on the right.
    The entire bar is portalled to body so no delivery content can paint over it. */
 body.deliveryMode > .deliverySaveActions.deliveryActionPortal{
@@ -4508,7 +4508,7 @@ window.addEventListener("error",e=>{const b=document.getElementById("runtimeErro
       <button class="heroHomeHotspot noPrint" type="button" aria-label="Return to Dashboard" title="Dashboard" onclick="returnToDashboardFromHeader()"></button>
     </div>
     <div class="heroActions noPrint">
-      <span class="app-version">v0.10.30 <span class="devBadge">DEV</span></span>
+      <span class="app-version">v0.10.31 <span class="devBadge">DEV</span></span>
       <button class="heroMenuButton" id="heroMenuButton" type="button" aria-expanded="false">Menu</button>
     </div>
   </div>
@@ -5601,6 +5601,10 @@ function runDevSelfTests(){
    const footerOk=!!actionBar && ["cancelEditDelivery","clearDelivery","saveDelivery"].every(id=>!!actionBar.querySelector(`#${id}`));
    rows.push(devSelfTestRow("Delivery 3-action footer",footerOk?"pass":"fail",
      footerOk?"Cancel, Clear and Save share one reusable footer container.":"Delivery action footer is incomplete or split across containers."));
+   const clearBtn=document.getElementById("clearDelivery");
+   const clearLabelOk=!!clearBtn && clearBtn.textContent.trim()==="Clear";
+   rows.push(devSelfTestRow("Delivery Clear label",clearLabelOk?"pass":"fail",
+     clearLabelOk?'Create/Edit use the same "Clear" label.':`Unexpected Clear label: ${clearBtn?.textContent?.trim()||"missing"}`));
 
    const cloudOk=!!document.getElementById("cloudSyncDecision");
    rows.push(devSelfTestRow("Stage 2D DEV guard",cloudOk?"pass":"warn",
@@ -6248,7 +6252,7 @@ window.editDocket=id=>{
  document.getElementById("saveDelivery").setAttribute("aria-label","Save docket changes");
  document.getElementById("cancelEditDelivery").style.display="block";
  document.getElementById("cancelEditDelivery").textContent="Cancel";
- document.getElementById("clearDelivery").textContent="Clear Lines";
+ document.getElementById("clearDelivery").textContent="Clear";
  const editBanner=document.getElementById("deliveryEditBanner");if(editBanner){
    editBanner.style.display="block";
    editBanner.innerHTML=d.generatedFromSundaySuggestion
@@ -6822,7 +6826,7 @@ function buildFullBackupPayload(kind="SUPPORT",note=""){
   return {
     magicDragonBackup:true,
     app:"Magic Dragon Pin",
-    appVersion:"0.10.30-dev",
+    appVersion:"0.10.31-dev",
     backupKind:String(kind||"SUPPORT").toUpperCase(),
     createdAt:new Date().toISOString(),
     note:String(note||""),
@@ -8418,10 +8422,10 @@ function calcImport(){
 
 
 const MD_DEV_RELEASE_META={
-  version:"0.10.30-dev",
-  checkpoint:"parent-variant-picker",
-  proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery"],
-  testing:["parent-variant-picker","dev-self-test"],
+  version:"0.10.31-dev",
+  checkpoint:"stable-candidate",
+  proven:["az-26-cell","shared-branch-catalogue","sunday-context-filter","show-all-products","keyboard-safe-input","backup-recovery","parent-variant-picker","delivery-fixed-action-footer","editable-delivery-row"],
+  testing:["dev-self-test","stable-candidate-smoke-test"],
   devOnly:["supabase-reference-sync","stage2a","stage2b","stage2c","stage2d"]
 };
 
@@ -9759,7 +9763,7 @@ document.getElementById("exportData").onclick=async()=>{
  const btn=document.getElementById("exportData");if(btn.disabled)return;btn.disabled=true;backupStatus("Preparing complete backup…");
  try{
   const sourceFiles=await exportArchivedSourceFiles(),counts=backupCounts();
-  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.30-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
+  const pkg={format:BACKUP_FORMAT,schema:BACKUP_SCHEMA,appVersion:"0.10.31-dev",createdAt:new Date().toISOString(),counts,sourceFilesCount:sourceFiles.length,data:JSON.parse(JSON.stringify(db)),sourceFiles};
   await downloadBackupPackage(pkg);
   backupStatus(`Backup ready: ${counts.deliveries} deliveries, ${counts.sundayReports} Sunday reports, ${counts.invoices} invoices, ${sourceFiles.length} archived source file${sourceFiles.length===1?"":"s"}.`);
  }catch(e){console.error(e);backupStatus("Backup could not be created. No app data was changed.",true);alert("The full backup could not be created. Your current app data has not been changed.")}
@@ -10089,7 +10093,7 @@ async function mdCloudRefPreviewMerge(){
   return true;
 }
 function mdCloudRefSaveUndoSnapshot(){
-  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.30-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
+  const snap={createdAt:new Date().toISOString(),appVersion:"0.10.31-dev",products:JSON.parse(JSON.stringify(db.products||[])),productAliases:JSON.parse(JSON.stringify(db.productAliases||{}))};
   localStorage.setItem(MDPIN_STAGE2C_UNDO_KEY,JSON.stringify(snap));
   return snap;
 }
@@ -10159,7 +10163,7 @@ async function mdCloudRefUpload(){
       {key:'snapshot_meta',value:{
         schema_version:1,
         snapshot_id:snapshotId,
-        app_version:'0.10.30-dev',
+        app_version:'0.10.31-dev',
         product_count:products.length,
         alias_count:aliases.length,
         uploaded_at:now,
